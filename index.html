@@ -6,6 +6,7 @@
 <meta name="color-scheme" content="light only">
 <meta name="theme-color" content="#f6f1e7">
 <title>Projects Directory</title>
+<meta name="robots" content="noindex, nofollow">
 <meta name="description" content="All of Ahmad's live web apps and games in one place.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231f4d3f'/%3E%3Crect x='14' y='14' width='15' height='15' rx='4' fill='%23f6f1e7'/%3E%3Crect x='35' y='14' width='15' height='15' rx='4' fill='%23e7a83e'/%3E%3Crect x='14' y='35' width='15' height='15' rx='4' fill='%23e7a83e'/%3E%3Crect x='35' y='35' width='15' height='15' rx='4' fill='%23f6f1e7'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -73,6 +74,7 @@ h1 em{font-style:normal; color:var(--accent); background:linear-gradient(transpa
 .info .ar{font-family:"IBM Plex Sans Arabic",sans-serif; color:var(--muted); font-size:14px; margin-top:2px; text-align:left}
 .meta{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
 .pill{font:500 12px/1 "Inter","IBM Plex Sans Arabic",sans-serif; padding:5px 8px; border-radius:999px; background:#f1ebde; color:var(--ink)}
+.pill.hid{background:#ece9f7; color:#4b4689}
 .pill.date{background:transparent; border:1px solid var(--line); color:var(--muted)}
 .card p{margin:0; color:var(--muted); font-size:15px}
 .actions{display:flex; gap:8px; margin-top:auto}
@@ -130,6 +132,12 @@ const code = repo => `https://github.com/${USER}/${repo}`;
    icon: a key from ICONS below; bg: the picture's background colour.
 ------------------------------------------------------------------- */
 const PROJECTS = [
+  { name: "Majlis", ar: "تحضير الحديث مع الأصدقاء", type: "Tool", lang: "EN · عربي", released: "2026-10-28", hidden: true,
+    desc: "Get good conversations ready before meeting friends. Locked with a PIN.",
+    url: site("Farewell", "majlis-7q/"), repo: "Farewell", icon: "chat", bg: "#e6e4f3", fg: "#4b4689" },
+  { name: "Hadith Card Maker", ar: "صانع بطاقات الأحاديث", type: "Tool", lang: "عربي", released: "2026-10-26", hidden: true,
+    desc: "Pick a template, type the text, and save a card for WhatsApp status or Instagram stories.",
+    url: site("Teacher_Day", "hadith-cards/"), repo: "Teacher_Day", icon: "cards", bg: "#f5e7d3", fg: "#8a5a22" },
   { name: "Reading Quran", ar: "قراءة القرآن", type: "Reading", lang: "عربي", released: "2026-10-28",
     desc: "Read a few pages at a time, and pick up exactly where you stopped.",
     url: site("Reading-Quraan"), repo: "Reading-Quraan", icon: "quran", bg: "#e3efdc", fg: "#2e6b48" },
@@ -159,6 +167,8 @@ const PROJECTS = [
 /* Simple line icons (24x24, stroke = currentColor). */
 const I = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const ICONS = {
+  chat:    I(`<path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/>`),
+  cards:   I(`<rect x="8" y="2" width="13" height="17" rx="2"/><path d="M5 5H4a1 1 0 0 0-1 1v15a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-1"/><path d="m14.5 7 .7 1.5 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2z"/><path d="M11 14h7"/>`),
   quran:   I(`<path d="M12 7v13"/><path d="M3 18a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>`),
   teacher: I(`<path d="M21.4 10.9a1 1 0 0 0 0-1.8l-8.6-4a2 2 0 0 0-1.6 0L2.6 9.1a1 1 0 0 0 0 1.8l8.6 4a2 2 0 0 0 1.6 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>`),
   train:   I(`<rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h.01"/><path d="M16 15h.01"/>`),
@@ -201,6 +211,7 @@ function render() {
           <div class="meta">
             <span class="pill">${esc(p.type)}</span>
             ${p.lang ? `<span class="pill">${esc(p.lang)}</span>` : ""}
+            ${p.hidden ? `<span class="pill hid">Hidden</span>` : ""}
             <span class="pill date">${fmt(p.released)}</span>
           </div>
         </div>
