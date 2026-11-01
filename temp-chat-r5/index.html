@@ -74,6 +74,8 @@ label.lab,.lab{display:block; font-weight:500; margin:0 0 6px}
 .dot.on{background:#21a35b}
 .iconbtn{flex:none; width:42px; height:42px; border-radius:12px; border:1.5px solid var(--line); background:#fff; display:grid; place-items:center}
 .iconbtn svg{width:20px; height:20px}
+.wipebtn{flex:none; height:42px; border-radius:12px; border:1.5px solid #f0cdca; background:#fff; color:var(--red); display:flex; align-items:center; gap:6px; padding:0 12px; font-weight:600; font-size:15px}
+.wipebtn svg{width:18px; height:18px}
 .fuse{height:4px; background:var(--teal-soft)}
 .fuse i{display:block; height:100%; background:var(--teal); transition:width 1s linear}
 .fuse.low{background:var(--amber-soft)} .fuse.low i{background:var(--amber)}
@@ -189,6 +191,9 @@ label.lab,.lab{display:block; font-weight:500; margin:0 0 6px}
   <div class="bar">
     <div class="bar-in">
       <div class="bar-title"><b id="chatTitle">Temporary chat</b><span id="chatSub"></span></div>
+      <button class="wipebtn" id="wipeBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l10-10a1 1 0 0 1 1.4 0l5.6 5.6a1 1 0 0 1 0 1.4L13 19"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+        Wipe</button>
       <button class="iconbtn" id="menuBtn" type="button" aria-label="Chat options">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
       </button>
@@ -280,6 +285,7 @@ const chatUrl = slug => `${location.origin}${location.pathname}?c=${slug}`;
 const inviteText = (slug, pass) => `Join my temporary chat:\n${chatUrl(slug)}\nPasscode: ${pass}`;
 
 let cur = null;              // { slug, token, pass, name }
+let cleared = null;          // last wipe point seen from the server
 let S = null, lastId = 0, offset = 0, pollT = null, hours = 24, rendered = new Set(), lastFrom = null, unseen = 0;
 
 /* ---------- start ---------- */
@@ -355,7 +361,7 @@ $("jName").addEventListener("keydown", e => { if (e.key === "Enter") $("joinBtn"
 
 /* ---------- chat ---------- */
 function openChat() {
-  S = null; lastId = 0; rendered = new Set(); lastFrom = null; stick = true;
+  S = null; lastId = 0; rendered = new Set(); lastFrom = null; stick = true; cleared = null;
   $("logIn").innerHTML = "";
   show("chat"); poll();
 }
@@ -388,6 +394,13 @@ function gone(reason) {
 
 const memberName = id => { const m = S && S.members.find(x => x.id === id); return m ? m.name : "Someone"; };
 function apply(st) {
+  if (cleared !== null && st.room.cleared > cleared) {
+    cleared = st.room.cleared;
+    $("logIn").innerHTML = ""; rendered = new Set(); lastFrom = null; lastId = cleared; stick = true;
+    $("viewer").classList.remove("on");
+    return true;   // fetch again right away from the wipe point
+  }
+  cleared = st.room.cleared;
   S = st;
   offset = Date.parse(st.room.now) - Date.now();
   const others = st.members.filter(m => m.id !== st.me.id);
@@ -555,6 +568,13 @@ function openMenu() {
 }
 function closeSheet() { $("menu").classList.remove("on"); }
 $("menuBtn").onclick = openMenu;
+$("wipeBtn").onclick = async () => {
+  if (!confirm("Wipe all messages and photos for everyone in this chat? The chat stays open.")) return;
+  $("wipeBtn").disabled = true;
+  try { await rpc("tmp_clear", { p_slug: cur.slug, p_token: cur.token }); poll(); }
+  catch (e) { toast(e.message); }
+  finally { $("wipeBtn").disabled = false; }
+};
 $("menuClose").onclick = closeSheet;
 $("menu").addEventListener("click", e => { if (e.target.id === "menu") closeSheet(); });
 $("renameBtn").onclick = async () => {
