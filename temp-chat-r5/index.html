@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="color-scheme" content="light only">
+<meta name="theme-color" content="#f1f5f4">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Temporary Chatroom</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%230e7c6b'/%3E%3Cpath d='M18 20h28a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H30l-9 7v-7h-3a4 4 0 0 1-4-4V24a4 4 0 0 1 4-4z' fill='%23fff'/%3E%3Cpath d='M22 31h20' stroke='%230e7c6b' stroke-width='3' stroke-linecap='round' stroke-dasharray='4 4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Light theme only, by request: no dark mode, not even following the phone setting. */
+:root{
+  --bg:#f1f5f4; --card:#ffffff; --ink:#15221e; --muted:#5d6e69; --line:#dbe5e2;
+  --teal:#0e7c6b; --teal-dark:#0a5c50; --teal-soft:#d7efe9; --amber:#b57b00; --amber-soft:#fdf0cf; --red:#c2413a;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 "Outfit","Noto Sans Arabic",system-ui,sans-serif;
+  -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit; color:inherit}
+button{cursor:pointer; touch-action:manipulation}
+a{color:inherit}
+.screen{display:none; min-height:100dvh; padding:calc(env(safe-area-inset-top) + 24px) 16px calc(env(safe-area-inset-bottom) + 24px)}
+.screen.on{display:block}
+.col{max-width:440px; margin:0 auto}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.center{text-align:center}
+:focus-visible{outline:3px solid #f2b705; outline-offset:2px}
+
+h1{font-weight:700; font-size:34px; line-height:1.1; letter-spacing:-.01em; margin:0 0 8px}
+.lede{color:var(--muted); margin:0 0 22px}
+.panel{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px}
+.panel + .panel{margin-top:14px}
+label.lab,.lab{display:block; font-weight:500; margin:0 0 6px}
+.field{display:block; width:100%; border:1.5px solid var(--line); background:#fff; border-radius:14px; padding:13px 14px; font-size:17px; outline:none}
+.field:focus{border-color:var(--teal)}
+.seg{display:flex; gap:8px; margin:0 0 16px}
+.seg button{flex:1; border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:10px 0; font-weight:500}
+.seg button[aria-pressed="true"]{border-color:var(--teal); background:var(--teal-soft); color:var(--teal-dark)}
+.btn{display:block; width:100%; border:0; border-radius:14px; padding:15px 18px; font-weight:600; font-size:17px; background:var(--teal); color:#fff; text-align:center; text-decoration:none}
+.btn:active{background:var(--teal-dark)}
+.btn[disabled]{opacity:.55; cursor:not-allowed}
+.btn.ghost{background:#fff; color:var(--ink); border:1.5px solid var(--line)}
+.btn.danger{background:#fff; color:var(--red); border:1.5px solid #f0cdca}
+.err{color:var(--red); min-height:22px; font-size:15px; margin:10px 0 0}
+.stack > * + *{margin-top:10px}
+.hero-mark{width:56px; height:56px; border-radius:18px; background:var(--teal); display:grid; place-items:center; margin-bottom:18px}
+.hero-mark svg{width:32px; height:32px}
+.open-list{list-style:none; margin:0; padding:0}
+.open-list a{display:flex; justify-content:space-between; gap:8px; padding:12px 0; border-top:1px solid var(--line); text-decoration:none}
+.open-list li:first-child a{border-top:0}
+
+/* passcode */
+.digits{display:flex; justify-content:center; gap:10px; margin:6px 0 4px}
+.digits span{width:62px; height:76px; border-radius:16px; background:#fff; border:1.5px solid var(--line); display:grid; place-items:center; font-weight:700; font-size:42px; color:var(--teal-dark)}
+.passin{letter-spacing:.6em; text-align:center; font-weight:700; font-size:30px; padding:12px 0 12px .6em}
+.linkbox{display:flex; gap:8px; align-items:center; background:#fff; border:1.5px dashed var(--line); border-radius:14px; padding:10px 12px; font-size:14px; color:var(--muted); word-break:break-all}
+
+/* chat */
+#chat.on{display:flex; flex-direction:column; height:100dvh; padding:0}
+.bar{background:var(--card); border-bottom:1px solid var(--line); padding:calc(env(safe-area-inset-top) + 10px) 12px 10px}
+.bar-in{max-width:620px; margin:0 auto; display:flex; align-items:center; gap:10px}
+.bar-title{flex:1; min-width:0}
+.bar-title b{display:block; font-size:18px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.bar-title span{font-size:13px; color:var(--muted)}
+.dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:#b9c6c2; margin-right:5px; vertical-align:1px}
+.dot.on{background:#21a35b}
+.iconbtn{flex:none; width:42px; height:42px; border-radius:12px; border:1.5px solid var(--line); background:#fff; display:grid; place-items:center}
+.iconbtn svg{width:20px; height:20px}
+.fuse{height:4px; background:var(--teal-soft)}
+.fuse i{display:block; height:100%; background:var(--teal); transition:width 1s linear}
+.fuse.low{background:var(--amber-soft)} .fuse.low i{background:var(--amber)}
+.log{flex:1; min-height:0; overflow-y:auto; padding:12px 12px 8px; -webkit-overflow-scrolling:touch}
+.log-in{max-width:620px; margin:0 auto}
+.welcome{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; margin:6px 0 14px; text-align:center}
+.welcome p{margin:0 0 10px}
+.note{text-align:center; font-size:13px; color:var(--muted); margin:12px 0}
+.row{display:flex; flex-direction:column; align-items:flex-start; margin:3px 0}
+.row.mine{align-items:flex-end}
+.who{font-size:12px; color:var(--muted); margin:10px 6px 2px}
+.bub{max-width:82%; background:#fff; border:1px solid var(--line); border-radius:18px 18px 18px 6px; padding:9px 12px; white-space:pre-wrap; overflow-wrap:anywhere}
+.row.mine .bub{background:var(--teal); border-color:var(--teal); color:#fff; border-radius:18px 18px 6px 18px}
+.bub a{text-decoration:underline}
+.bub.photo{padding:4px; background:#fff}
+.row.mine .bub.photo{background:var(--teal)}
+.bub.photo img{display:block; max-width:min(260px,70vw); max-height:340px; border-radius:14px; cursor:zoom-in}
+.time{font-size:11px; color:var(--muted); margin:2px 8px 0}
+.pv{display:block; margin-top:8px; background:#fff; color:var(--ink); border:1px solid var(--line); border-radius:12px; overflow:hidden; text-decoration:none !important; white-space:normal}
+.pv img{display:block; width:100%; max-height:180px; object-fit:cover; background:var(--bg)}
+.pv div{padding:8px 10px}
+.pv small{display:block; color:var(--muted); font-size:12px}
+.pv b{display:block; font-weight:600; font-size:15px; line-height:1.3}
+.pv p{margin:2px 0 0; font-size:13px; color:var(--muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.dock{background:var(--card); border-top:1px solid var(--line); padding:8px 10px calc(env(safe-area-inset-bottom) + 8px)}
+.composer{max-width:620px; margin:0 auto; display:flex; gap:8px; align-items:flex-end}
+.composer textarea{flex:1; resize:none; border:1.5px solid var(--line); border-radius:22px; padding:11px 16px; font-size:16px; line-height:1.35; max-height:132px; outline:none; background:#fff}
+.composer textarea:focus{border-color:var(--teal)}
+.cbtn{flex:none; width:46px; height:46px; border-radius:50%; border:0; display:grid; place-items:center}
+.cbtn svg{width:22px; height:22px}
+.cbtn.photo{background:var(--teal-soft); color:var(--teal-dark)}
+.cbtn.send{background:var(--teal); color:#fff}
+.cbtn[disabled]{opacity:.5}
+
+/* sheet, viewer, toast */
+.sheet{position:fixed; inset:0; background:rgba(21,34,30,.35); display:none; align-items:flex-end; justify-content:center; z-index:20}
+.sheet.on{display:flex}
+.sheet-box{width:100%; max-width:440px; background:#fff; border-radius:24px 24px 0 0; padding:20px 16px calc(env(safe-area-inset-bottom) + 18px); max-height:88dvh; overflow-y:auto; animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(24px); opacity:.6}}
+.sheet-box h3{margin:0 0 4px; font-size:21px; font-weight:600}
+.viewer{position:fixed; inset:0; background:rgba(8,14,12,.92); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:30; padding:16px}
+.viewer.on{display:flex}
+.viewer img{max-width:100%; max-height:80dvh; border-radius:10px}
+.viewer .vrow{display:flex; gap:10px; margin-top:14px}
+.viewer .vrow > *{background:#fff; color:var(--ink); border:0; border-radius:12px; padding:10px 16px; font-weight:600; text-decoration:none; font-size:15px}
+.toast{position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom) + 84px); transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 16px; border-radius:999px; font-size:15px; z-index:40; display:none; max-width:90vw; text-align:center}
+.toast.on{display:block}
+@media (prefers-reduced-motion:reduce){.sheet-box{animation:none}.fuse i{transition:none}}
+</style>
+</head>
+<body>
+
+<!-- START -->
+<section class="screen" id="start">
+  <div class="col">
+    <div class="hero-mark"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 7h18a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H15l-6 5v-5H7a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3z" fill="#fff"/><path d="M10 14.5h12" stroke="#0e7c6b" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="3 3"/></svg></div>
+    <h1>Temporary Chatroom</h1>
+    <p class="lede">Start a private chat, send the link and passcode to someone, and talk. When time runs out, everything in it is erased.</p>
+    <div class="panel">
+      <label class="lab" for="sName">Your name in this chat</label>
+      <input class="field" id="sName" maxlength="30" autocomplete="off" dir="auto" placeholder="Any name you like">
+      <p class="lab" style="margin:16px 0 6px">Erase the chat after</p>
+      <div class="seg" id="hours" role="group" aria-label="Erase the chat after">
+        <button type="button" data-h="1" aria-pressed="false">1 hour</button>
+        <button type="button" data-h="24" aria-pressed="true">24 hours</button>
+        <button type="button" data-h="72" aria-pressed="false">3 days</button>
+      </div>
+      <button class="btn" id="createBtn" type="button">Start a chat</button>
+      <p class="err" id="startErr" aria-live="polite"></p>
+    </div>
+    <div class="panel" id="openPanel" hidden>
+      <p class="lab" style="margin:0 0 4px">Your open chats</p>
+      <ul class="open-list" id="openList"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- SHARE (right after starting) -->
+<section class="screen" id="share">
+  <div class="col">
+    <h1>Your chat is ready</h1>
+    <p class="lede">Send the link and the passcode to the person you want to talk to. They need both to get in.</p>
+    <div class="panel stack">
+      <p class="lab center" style="margin:0">Passcode</p>
+      <div class="digits" id="shareDigits"></div>
+      <div class="linkbox" id="shareLink"></div>
+      <button class="btn" id="shareBtn" type="button">Send invite</button>
+      <button class="btn ghost" id="copyBtn" type="button">Copy link and passcode</button>
+    </div>
+    <div style="margin-top:14px"><button class="btn ghost" id="toChatBtn" type="button">Open the chat</button></div>
+  </div>
+</section>
+
+<!-- JOIN -->
+<section class="screen" id="join">
+  <div class="col">
+    <div class="hero-mark"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 7h18a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H15l-6 5v-5H7a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3z" fill="#fff"/><path d="M10 14.5h12" stroke="#0e7c6b" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="3 3"/></svg></div>
+    <h1>You're invited to a chat</h1>
+    <p class="lede">It's temporary. Everything in it is erased when time runs out.</p>
+    <div class="panel">
+      <label class="lab" for="jPass">Passcode</label>
+      <input class="field passin" id="jPass" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" placeholder="••••">
+      <label class="lab" for="jName" style="margin-top:16px">Your name in this chat</label>
+      <input class="field" id="jName" maxlength="30" autocomplete="off" dir="auto" placeholder="Any name you like">
+      <button class="btn" id="joinBtn" type="button" style="margin-top:16px">Join the chat</button>
+      <p class="err" id="joinErr" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<!-- CHAT -->
+<section class="screen" id="chat">
+  <div class="bar">
+    <div class="bar-in">
+      <div class="bar-title"><b id="chatTitle">Temporary chat</b><span id="chatSub"></span></div>
+      <button class="iconbtn" id="menuBtn" type="button" aria-label="Chat options">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="fuse" id="fuse" role="progressbar" aria-label="Time left before the chat is erased"><i id="fuseIn" style="width:100%"></i></div>
+  <div class="log" id="log"><div class="log-in" id="logIn"></div></div>
+  <div class="dock">
+    <form class="composer" id="composer" autocomplete="off">
+      <button class="cbtn photo" type="button" id="photoBtn" aria-label="Send a photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+      </button>
+      <input type="file" id="photoIn" accept="image/*" hidden>
+      <textarea id="msg" rows="1" maxlength="2000" placeholder="Message" dir="auto" enterkeyhint="send"></textarea>
+      <button class="cbtn send" type="submit" id="sendBtn" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg>
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- GONE -->
+<section class="screen" id="gone">
+  <div class="col center" style="padding-top:16vh">
+    <div class="hero-mark" style="margin:0 auto 18px; background:#c7d3cf"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 7h18a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H15l-6 5v-5H7a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3z" fill="#fff"/></svg></div>
+    <h1 id="goneTitle">This chat has ended</h1>
+    <p class="lede" id="goneText"></p>
+    <a class="btn" href="./">Start a new chat</a>
+  </div>
+</section>
+
+<!-- MENU -->
+<div class="sheet" id="menu">
+  <div class="sheet-box stack" role="dialog" aria-modal="true" aria-labelledby="menuT">
+    <h3 id="menuT">Chat options</h3>
+    <p class="muted small" id="menuInfo" style="margin:0"></p>
+    <div id="menuInvite" class="stack"></div>
+    <button class="btn ghost" id="renameBtn" type="button">Change my name</button>
+    <button class="btn danger" id="endBtn" type="button">End and erase the chat</button>
+    <button class="btn ghost" id="menuClose" type="button">Close</button>
+  </div>
+</div>
+<div class="viewer" id="viewer"><img id="viewerImg" alt="Photo"><div class="vrow"><a id="viewerSave" download="photo.jpg">Save</a><button type="button" id="viewerClose">Close</button></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- backend: Supabase "First Project", tables tmp_*, used only through tmp_* functions ---------- */
+const SB_URL = "https://bhfgwlkzkbwcwyoypwhy.supabase.co";
+const SB_KEY = "sb_publishable_9YylflVQca-62NHsBKSTeA_GY896nj3";
+async function rpc(fn, args) {
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {
+    method: "POST", headers: { apikey: SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify(args)
+  });
+  const t = await r.text(); let j = null; try { j = t ? JSON.parse(t) : null; } catch {}
+  if (!r.ok) throw new Error((j && j.message) || "Couldn't reach the chat. Check your connection.");
+  return j;
+}
+async function linkPreview(url) {
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 6000);
+  try {
+    const r = await fetch(`${SB_URL}/functions/v1/tmp-link-preview`, {
+      method: "POST", signal: ctl.signal, headers: { apikey: SB_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ slug: cur.slug, token: cur.token, url })
+    });
+    if (!r.ok) return null;
+    const p = await r.json();
+    return p && (p.title || p.image) ? p : null;
+  } catch { return null; } finally { clearTimeout(t); }
+}
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const bdi = s => `<bdi>${esc(s)}</bdi>`;
+const URL_RE = /https?:\/\/[^\s<>"']+[^\s<>"'.,;:!?)\]]/gi;
+const linkify = s => esc(s).replace(/https?:\/\/[^\s<>"']+[^\s<>"'.,;:!?)\]]/gi,
+  u => `<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
+function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); }
+let toastT; function toast(t) { const e = $("toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove("on"), 2800); }
+
+const KEY = "tempChat.sessions";
+function loadSessions() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } }
+function saveSession(slug, data) {
+  const all = loadSessions();
+  if (data) all[slug] = { ...(all[slug] || {}), ...data }; else delete all[slug];
+  try { localStorage.setItem(KEY, JSON.stringify(all)); } catch {}
+}
+const chatUrl = slug => `${location.origin}${location.pathname}?c=${slug}`;
+const inviteText = (slug, pass) => `Join my temporary chat:\n${chatUrl(slug)}\nPasscode: ${pass}`;
+
+let cur = null;              // { slug, token, pass, name }
+let S = null, lastId = 0, offset = 0, pollT = null, hours = 24, rendered = new Set(), lastFrom = null, unseen = 0;
+
+/* ---------- start ---------- */
+$("hours").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  hours = +b.dataset.h;
+  $("hours").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+});
+try { $("sName").value = $("jName").value = localStorage.getItem("tempChat.name") || ""; } catch {}
+const rememberName = n => { try { localStorage.setItem("tempChat.name", n); } catch {} };
+
+$("createBtn").onclick = async () => {
+  const n = $("sName").value.trim();
+  if (!n) { $("startErr").textContent = "Type a name first."; return $("sName").focus(); }
+  $("startErr").textContent = ""; $("createBtn").disabled = true;
+  try {
+    const r = await rpc("tmp_create", { p_name: n, p_hours: hours });
+    rememberName(n);
+    saveSession(r.slug, { token: r.token, pass: r.pass, name: n, created: Date.now() });
+    cur = { slug: r.slug, token: r.token, pass: r.pass };
+    history.replaceState(null, "", `?c=${r.slug}`);
+    showShare();
+  } catch (e) { $("startErr").textContent = e.message; }
+  finally { $("createBtn").disabled = false; }
+};
+function renderOpenList() {
+  const all = loadSessions(), slugs = Object.keys(all);
+  $("openPanel").hidden = !slugs.length;
+  $("openList").innerHTML = slugs.sort((a, b) => (all[b].created || 0) - (all[a].created || 0)).map(s =>
+    `<li><a href="?c=${s}"><span>Chat as ${bdi(all[s].name || "you")}</span><span class="muted small">Open</span></a></li>`).join("");
+}
+
+/* ---------- share ---------- */
+function showShare() {
+  $("shareDigits").innerHTML = [...cur.pass].map(d => `<span>${d}</span>`).join("");
+  $("shareLink").textContent = chatUrl(cur.slug);
+  show("share");
+}
+async function sendInvite() {
+  const text = inviteText(cur.slug, cur.pass);
+  try {
+    if (navigator.share) await navigator.share({ title: "Temporary Chatroom", text });
+    else { await navigator.clipboard.writeText(text); toast("Invite copied"); }
+  } catch {}
+}
+async function copyInvite() {
+  try { await navigator.clipboard.writeText(inviteText(cur.slug, cur.pass)); toast("Link and passcode copied"); }
+  catch { toast("Couldn't copy. Use Send invite instead."); }
+}
+$("shareBtn").onclick = sendInvite;
+$("copyBtn").onclick = copyInvite;
+$("toChatBtn").onclick = () => openChat();
+
+/* ---------- join ---------- */
+$("jPass").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4); });
+$("joinBtn").onclick = async () => {
+  const pass = $("jPass").value, n = $("jName").value.trim();
+  if (pass.length !== 4) { $("joinErr").textContent = "The passcode has 4 digits."; return $("jPass").focus(); }
+  if (!n) { $("joinErr").textContent = "Type a name first."; return $("jName").focus(); }
+  $("joinErr").textContent = ""; $("joinBtn").disabled = true;
+  try {
+    const r = await rpc("tmp_join", { p_slug: slug, p_pass: pass, p_name: n });
+    if (r.error) { $("joinErr").textContent = r.error; $("jPass").value = ""; $("jPass").focus(); return; }
+    rememberName(n);
+    saveSession(r.slug, { token: r.token, pass, name: n, created: Date.now() });
+    cur = { slug: r.slug, token: r.token, pass };
+    openChat();
+  } catch (e) { $("joinErr").textContent = e.message; }
+  finally { $("joinBtn").disabled = false; }
+};
+$("jPass").addEventListener("keydown", e => { if (e.key === "Enter") $("jName").focus(); });
+$("jName").addEventListener("keydown", e => { if (e.key === "Enter") $("joinBtn").click(); });
+
+/* ---------- chat ---------- */
+function openChat() {
+  S = null; lastId = 0; rendered = new Set(); lastFrom = null; stick = true;
+  $("logIn").innerHTML = "";
+  show("chat"); poll();
+}
+function stopPolling() { clearTimeout(pollT); pollT = null; }
+async function poll() {
+  stopPolling();
+  let more = false;
+  try {
+    const st = await rpc("tmp_state", { p_slug: cur.slug, p_token: cur.token, p_after: lastId });
+    if (st.gone) return gone(st.gone);
+    more = apply(st);
+  } catch {}
+  pollT = setTimeout(poll, more ? 50 : document.hidden ? 6000 : 2000);
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) { unseen = 0; document.title = "Temporary Chatroom"; if (cur && $("chat").classList.contains("on")) poll(); }
+});
+
+function gone(reason) {
+  stopPolling(); saveSession(cur.slug, null); closeSheet();
+  const t = {
+    ended: ["This chat has ended", "Someone ended it, and everything in it has been erased."],
+    expired: ["This chat has expired", "Its time ran out, and everything in it has been erased."],
+    missing: ["This chat isn't available", "It may have ended, or the link is incomplete."]
+  }[reason] || ["This chat has ended", ""];
+  $("goneTitle").textContent = t[0]; $("goneText").textContent = t[1];
+  history.replaceState(null, "", location.pathname);
+  show("gone");
+}
+
+const memberName = id => { const m = S && S.members.find(x => x.id === id); return m ? m.name : "Someone"; };
+function apply(st) {
+  S = st;
+  offset = Date.parse(st.room.now) - Date.now();
+  const others = st.members.filter(m => m.id !== st.me.id);
+  $("chatTitle").innerHTML = others.length ? `Chat with ${others.map(m => bdi(m.name)).join(", ")}` : "Waiting for someone to join";
+  const anyOnline = others.some(m => m.online);
+  $("chatSub").innerHTML = others.length
+    ? `<span class="dot ${anyOnline ? "on" : ""}"></span>${anyOnline ? "Here now" : "Away"} · you're ${bdi(st.me.name)}`
+    : `You're ${bdi(st.me.name)}`;
+  const log = $("log");
+  if (!others.length && !$("welcome") && st.messages.length === 0 && lastId === 0) drawWelcome();
+  if (others.length && $("welcome")) $("welcome").remove();
+  let gotOther = false;
+  for (const m of st.messages) {
+    if (m.id > lastId) lastId = m.id;
+    if (rendered.has(m.id)) continue;
+    rendered.add(m.id); drawMessage(m);
+    if (m.from !== st.me.id) gotOther = true;
+  }
+  if (st.messages.length && (stick || st.messages.some(m => m.from === st.me.id))) { stick = true; log.scrollTop = log.scrollHeight; }
+  if (gotOther && document.hidden) { unseen++; document.title = `(${unseen}) Temporary Chatroom`; }
+  tick();
+  return st.messages.length >= 20;
+}
+function drawWelcome() {
+  const d = document.createElement("div");
+  d.className = "welcome"; d.id = "welcome";
+  d.innerHTML = `<p>Nobody else is here yet. Send the link and passcode to invite someone.</p>
+    <button class="btn" type="button" id="wInvite">Send invite</button>`;
+  $("logIn").appendChild(d);
+  $("wInvite").onclick = () => { if (cur.pass) sendInvite(); else openMenu(); };
+}
+const hhmm = iso => new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+function drawMessage(m) {
+  const box = $("logIn");
+  if (m.kind === "note") {
+    const n = document.createElement("p"); n.className = "note"; n.dir = "ltr"; n.textContent = m.body || ""; box.appendChild(n);
+    lastFrom = null; return;
+  }
+  const mine = m.from === S.me.id;
+  const row = document.createElement("div");
+  row.className = "row" + (mine ? " mine" : "");
+  let html = "";
+  if (!mine && lastFrom !== m.from) html += `<div class="who">${bdi(memberName(m.from))}</div>`;
+  if (m.image) {
+    html += `<div class="bub photo"><img src="${m.image}" alt="Photo from ${esc(mine ? "you" : memberName(m.from))}" loading="lazy" data-view></div>`;
+  }
+  if (m.body) {
+    let pv = "";
+    if (m.preview && /^https?:\/\//.test(m.preview.url)) {
+      const p = m.preview;
+      pv = `<a class="pv" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">
+        ${p.image && /^https?:\/\//.test(p.image) ? `<img src="${esc(p.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+        <div>${p.site ? `<small>${esc(p.site)}</small>` : ""}${p.title ? `<b dir="auto">${esc(p.title)}</b>` : ""}${p.description ? `<p dir="auto">${esc(p.description)}</p>` : ""}</div></a>`;
+    }
+    html += `<div class="bub" dir="auto">${linkify(m.body)}${pv}</div>`;
+  }
+  html += `<div class="time">${hhmm(m.at)}</div>`;
+  row.innerHTML = html;
+  box.appendChild(row);
+  lastFrom = m.from;
+}
+/* stay pinned to the newest message while photos and previews finish loading */
+let stick = true;
+$("log").addEventListener("scroll", () => { const l = $("log"); stick = l.scrollHeight - l.scrollTop - l.clientHeight < 120; }, { passive: true });
+$("log").addEventListener("load", e => { if (e.target.tagName === "IMG" && stick) $("log").scrollTop = $("log").scrollHeight; }, true);
+$("logIn").addEventListener("click", e => {
+  const img = e.target.closest("[data-view]"); if (!img) return;
+  $("viewerImg").src = img.src; $("viewerSave").href = img.src; $("viewer").classList.add("on");
+});
+$("viewerClose").onclick = () => $("viewer").classList.remove("on");
+$("viewer").addEventListener("click", e => { if (e.target.id === "viewer") $("viewer").classList.remove("on"); });
+
+/* time left */
+function timeLeftText(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  if (d) return `${d}d ${h}h`;
+  if (h) return `${h}h ${m}m`;
+  if (m) return `${m}m`;
+  return `${s}s`;
+}
+function tick() {
+  if (!S) return;
+  const now = Date.now() + offset, end = Date.parse(S.room.expires_at), start = Date.parse(S.room.created_at);
+  const left = end - now, frac = Math.max(0, Math.min(1, left / (end - start)));
+  $("fuseIn").style.width = (frac * 100).toFixed(2) + "%";
+  $("fuse").classList.toggle("low", left < 10 * 60 * 1000);
+  $("fuse").title = `Erased in ${timeLeftText(left)}`;
+  if (left <= 0 && pollT) poll();
+}
+setInterval(tick, 1000);
+
+/* sending */
+const ta = $("msg");
+ta.addEventListener("input", () => { ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 132) + "px"; });
+ta.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey && !e.isComposing && matchMedia("(hover:hover)").matches) { e.preventDefault(); $("composer").requestSubmit(); }
+});
+let sending = false;
+$("composer").addEventListener("submit", async e => {
+  e.preventDefault();
+  const body = ta.value.trim();
+  if (!body || sending) return;
+  sending = true; $("sendBtn").disabled = true;
+  const url = (body.match(URL_RE) || [])[0];
+  try {
+    const preview = url ? await linkPreview(url) : null;
+    await rpc("tmp_send", { p_slug: cur.slug, p_token: cur.token, p_body: body, p_image: null, p_preview: preview });
+    ta.value = ""; ta.style.height = "auto";
+    poll();
+  } catch (err) { toast(err.message); }
+  finally { sending = false; $("sendBtn").disabled = false; ta.focus(); }
+});
+
+/* photos: shrunk on the phone before sending */
+$("photoBtn").onclick = () => $("photoIn").click();
+$("photoIn").addEventListener("change", async () => {
+  const f = $("photoIn").files[0]; $("photoIn").value = "";
+  if (!f) return;
+  if (!f.type.startsWith("image/")) return toast("That file isn't a photo.");
+  $("photoBtn").disabled = true; toast("Sending photo…");
+  try {
+    const data = await shrink(f);
+    await rpc("tmp_send", { p_slug: cur.slug, p_token: cur.token, p_body: null, p_image: data, p_preview: null });
+    $("toast").classList.remove("on");
+    poll();
+  } catch (err) { toast(err.message || "Couldn't send that photo."); }
+  finally { $("photoBtn").disabled = false; }
+});
+async function decodeImage(file) {
+  try { return await createImageBitmap(file); } catch {}
+  return await new Promise((res, rej) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => { URL.revokeObjectURL(u); res(img); };
+    img.onerror = () => { URL.revokeObjectURL(u); rej(new Error("Couldn't open that photo.")); };
+    img.src = u;
+  });
+}
+async function shrink(file) {
+  const img = await decodeImage(file);
+  const w0 = img.width, h0 = img.height;
+  let max = 1600, q = .8, out = "";
+  for (let i = 0; i < 6; i++) {
+    const k = Math.min(1, max / Math.max(w0, h0));
+    const c = document.createElement("canvas");
+    c.width = Math.round(w0 * k); c.height = Math.round(h0 * k);
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+    g.drawImage(img, 0, 0, c.width, c.height);
+    out = c.toDataURL("image/jpeg", q);
+    if (out.length < 850000) return out;
+    max = Math.round(max * .8); q = Math.max(.5, q - .08);
+  }
+  throw new Error("That photo is too big to send.");
+}
+
+/* menu */
+function openMenu() {
+  const exp = S ? new Date(Date.parse(S.room.expires_at)) : null;
+  $("menuInfo").textContent = exp ? `Everything here is erased at ${exp.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })} (in ${timeLeftText(Date.parse(S.room.expires_at) - Date.now() - offset)}).` : "";
+  $("menuInvite").innerHTML = cur.pass
+    ? `<button class="btn" type="button" id="mInvite">Send invite</button>
+       <button class="btn ghost" type="button" id="mCopy">Copy link and passcode (${esc(cur.pass)})</button>`
+    : `<p class="muted small" style="margin:0">Ask the person who started the chat for the passcode to invite someone else.</p>`;
+  if ($("mInvite")) { $("mInvite").onclick = sendInvite; $("mCopy").onclick = copyInvite; }
+  $("menu").classList.add("on");
+}
+function closeSheet() { $("menu").classList.remove("on"); }
+$("menuBtn").onclick = openMenu;
+$("menuClose").onclick = closeSheet;
+$("menu").addEventListener("click", e => { if (e.target.id === "menu") closeSheet(); });
+$("renameBtn").onclick = async () => {
+  const n = (prompt("Your new name in this chat", S ? S.me.name : "") || "").trim();
+  if (!n) return;
+  try { await rpc("tmp_rename", { p_slug: cur.slug, p_token: cur.token, p_name: n }); saveSession(cur.slug, { name: n }); closeSheet(); poll(); }
+  catch (e) { toast(e.message); }
+};
+$("endBtn").onclick = async () => {
+  if (!confirm("End this chat for everyone? All messages and photos will be erased.")) return;
+  try { await rpc("tmp_end", { p_slug: cur.slug, p_token: cur.token }); gone("ended"); }
+  catch (e) { toast(e.message); }
+};
+
+/* ---------- boot ---------- */
+const slug = (new URLSearchParams(location.search).get("c") || "").toLowerCase().replace(/[^0-9a-f]/g, "");
+if (slug) {
+  const s = loadSessions()[slug];
+  if (s && s.token) { cur = { slug, token: s.token, pass: s.pass }; openChat(); }
+  else show("join");
+} else { renderOpenList(); show("start"); }
+</script>
+</body>
+</html>
