@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="color-scheme" content="light only">
+<meta name="theme-color" content="#eceaf7">
+<meta name="robots" content="noindex, nofollow">
+<title>Who's There?</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%235b3fd1'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle'%3E%F0%9F%8E%AD%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Rubik:wght@400;500;600&display=swap">
+<style>
+/* Light theme only, by request: no dark mode, not even following the phone setting. */
+:root{
+  --bg:#eceaf7; --card:#ffffff; --ink:#1b2140; --muted:#636884; --line:#d9d6ec;
+  --violet:#5b3fd1; --violet-soft:#e4ddff; --sun:#ffc83d; --mint:#1f9e6c; --mint-soft:#d9f3e8;
+  --rose:#d6455d; --rose-soft:#fbe1e5;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:16px/1.45 "Rubik",system-ui,sans-serif;
+  -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent;
+}
+button,input{font:inherit; color:inherit}
+button{cursor:pointer; touch-action:manipulation}
+.screen{display:none; min-height:100dvh; padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 24px)}
+.screen.on{display:block}
+.col{max-width:480px; margin:0 auto}
+.display{font-family:"Fredoka",sans-serif; font-weight:700; letter-spacing:-.01em}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+
+/* buttons & fields */
+.btn{display:block; width:100%; border:0; border-radius:16px; padding:15px 18px; font-weight:600; font-size:17px;
+  background:var(--violet); color:#fff; box-shadow:0 3px 0 #3e2a99}
+.btn:active{transform:translateY(2px); box-shadow:0 1px 0 #3e2a99}
+.btn[disabled]{background:#b9b3d8; box-shadow:0 3px 0 #9e98c2; cursor:not-allowed}
+.btn.ghost{background:#fff; color:var(--ink); box-shadow:0 3px 0 var(--line); border:1px solid var(--line)}
+.btn.sun{background:var(--sun); color:var(--ink); box-shadow:0 3px 0 #d39e12}
+.link{background:none; border:0; color:var(--muted); text-decoration:underline; padding:8px; font-size:15px}
+.field{display:block; width:100%; border:1.5px solid var(--line); background:#fff; border-radius:14px; padding:13px 14px; font-size:17px; outline:none}
+.field:focus{border-color:var(--violet)}
+:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+label.lab{display:block; font-weight:500; margin:0 0 6px}
+.err{color:var(--rose); min-height:22px; font-size:15px; margin:8px 0 0}
+
+/* home */
+.brand{text-align:center; margin:14px 0 26px}
+.masks{font-size:46px; line-height:1; letter-spacing:4px}
+.brand h1{font-size:44px; margin:10px 0 4px}
+.panel{background:var(--card); border-radius:22px; padding:18px; border:1px solid var(--line)}
+.panel + .panel{margin-top:14px}
+.seg{display:flex; gap:8px; margin:6px 0 14px}
+.seg button{flex:1; border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:10px 0; font-weight:500}
+.seg button[aria-pressed="true"]{border-color:var(--violet); background:var(--violet-soft); color:var(--violet)}
+.orline{display:flex; align-items:center; gap:10px; color:var(--muted); margin:18px 0 12px; font-size:14px}
+.orline::before,.orline::after{content:""; flex:1; height:1px; background:var(--line)}
+.joinrow{display:flex; gap:8px}
+.joinrow .field{flex:1; text-transform:uppercase; letter-spacing:.3em; font-family:"Fredoka",sans-serif; font-weight:600; text-align:center}
+.joinrow .btn{width:auto; padding:0 22px}
+.resume{display:none; margin-bottom:14px}
+
+/* lobby */
+.code{display:flex; justify-content:center; gap:8px; margin:6px 0 4px}
+.code span{width:58px; height:68px; border-radius:16px; background:#fff; border:2px solid var(--ink); display:grid; place-items:center;
+  font:700 38px/1 "Fredoka",sans-serif; box-shadow:0 4px 0 var(--ink)}
+.center{text-align:center}
+.plist{list-style:none; padding:0; margin:0}
+.plist li{display:flex; align-items:center; gap:10px; padding:11px 0; border-bottom:1px solid var(--line)}
+.plist li:last-child{border-bottom:0}
+.av{width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font-weight:600; background:var(--violet-soft); color:var(--violet); flex:none}
+.plist .nm{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.tag{font-size:12px; font-weight:600; padding:3px 8px; border-radius:999px; background:#fff4d0; color:#8a6400}
+.kick{border:0; background:none; color:var(--muted); font-size:22px; padding:0 6px; line-height:1}
+.steps{margin:0; padding-left:20px; color:var(--muted); font-size:15px}
+.steps li{margin:3px 0}
+.stack > * + *{margin-top:12px}
+
+/* play */
+#play.on{display:flex; flex-direction:column; height:100dvh; min-height:0; padding-bottom:0}
+.top{display:flex; align-items:center; gap:12px; max-width:560px; width:100%; margin:0 auto}
+.mask{flex:none; width:64px; height:56px; border-radius:28px 28px 22px 22px; background:var(--violet); display:grid; place-items:center;
+  font-size:32px; box-shadow:0 4px 0 #3e2a99; position:relative}
+.mask::before,.mask::after{content:""; position:absolute; top:24px; width:10px; height:4px; background:var(--violet); border-radius:2px}
+.mask::before{left:-7px}.mask::after{right:-7px}
+.who{flex:1; min-width:0}
+.who b{display:block; font:700 22px/1.1 "Fredoka",sans-serif}
+.timer{font:700 22px/1 "Fredoka",sans-serif; background:#fff; border:2px solid var(--ink); border-radius:14px; padding:8px 10px; min-width:76px; text-align:center}
+.timer.low{background:var(--rose-soft); border-color:var(--rose); color:var(--rose)}
+.mates{display:flex; gap:8px; max-width:560px; width:100%; margin:14px auto 0}
+.mate{flex:1; display:flex; align-items:center; gap:8px; background:#fff; border:1.5px dashed #b4aed6; border-radius:16px; padding:9px 10px; text-align:left; min-width:0}
+.mate.set{border-style:solid; border-color:var(--violet)}
+.mate .em{font-size:26px; line-height:1}
+.mate small{display:block; color:var(--muted); font-size:12px}
+.mate span.g{display:block; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.log{flex:1; min-height:0; overflow-y:auto; max-width:560px; width:100%; margin:12px auto 0; padding:4px 2px 12px; -webkit-overflow-scrolling:touch}
+.empty{text-align:center; color:var(--muted); margin-top:30px; font-size:15px}
+.msg{display:flex; gap:8px; margin:8px 0; align-items:flex-end}
+.msg .em{font-size:24px; line-height:1; flex:none}
+.bub{max-width:78%; padding:10px 13px; border-radius:18px 18px 18px 6px; background:#fff; border:1px solid var(--line); white-space:pre-wrap; word-wrap:break-word}
+.bub small{display:block; font-size:12px; color:var(--muted); margin-bottom:2px}
+.msg.mine{justify-content:flex-end}
+.msg.mine .bub{background:var(--violet); color:#fff; border-color:var(--violet); border-radius:18px 18px 6px 18px}
+.dock{max-width:560px; width:100%; margin:0 auto; padding:10px 0 calc(env(safe-area-inset-bottom) + 12px)}
+.composer{display:flex; gap:8px; align-items:center}
+.composer .field{flex:1; border-radius:999px; padding:12px 16px}
+.round{flex:none; width:48px; height:48px; border-radius:50%; border:0; display:grid; place-items:center; font-size:20px}
+.round.ask{background:#fff4d0; border:1.5px solid #f2d27a}
+.round.send{background:var(--violet); color:#fff; font-size:18px}
+.round[disabled]{opacity:.45}
+.closed{background:#fff; border-radius:18px; border:1px solid var(--line); padding:14px; text-align:center}
+.closed p{margin:0 0 10px}
+
+/* sheet */
+.sheet{position:fixed; inset:0; background:rgba(27,33,64,.35); display:none; align-items:flex-end; justify-content:center; z-index:20}
+.sheet.on{display:flex}
+.sheet-box{width:100%; max-width:480px; background:#fff; border-radius:24px 24px 0 0; padding:20px 16px calc(env(safe-area-inset-bottom) + 18px);
+  max-height:80dvh; overflow-y:auto; animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(30px); opacity:.6}}
+.sheet-box h3{margin:0 0 4px; font:700 22px/1.2 "Fredoka",sans-serif}
+.pick{display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:12px; margin-top:8px; font-weight:500}
+.pick[aria-pressed="true"]{border-color:var(--violet); background:var(--violet-soft)}
+
+/* reveal */
+.headline{font-size:32px; line-height:1.1; margin:6px 0 6px; text-align:center}
+.card{background:#fff; border-radius:22px; border:1px solid var(--line); padding:16px}
+.card.mine{border:2px solid var(--violet)}
+.unmask{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px}
+.unmask div{display:flex; align-items:center; gap:6px; background:var(--bg); border-radius:999px; padding:6px 12px 6px 8px; font-weight:600}
+.unmask .em{font-size:22px}
+.gl{list-style:none; padding:0; margin:0; font-size:15px}
+.gl li{padding:7px 0; border-top:1px solid var(--line); display:flex; gap:8px; align-items:baseline}
+.ok{color:var(--mint); font-weight:600}
+.no{color:var(--rose); font-weight:600}
+.pts{margin-left:auto; flex:none; font-weight:600; font-size:14px}
+.board li .sc{font:700 20px/1 "Fredoka",sans-serif}
+.board li .dl{font-size:13px; font-weight:600; color:var(--mint); background:var(--mint-soft); padding:2px 7px; border-radius:999px}
+h2.sec{font:600 18px/1.2 "Fredoka",sans-serif; margin:22px 0 10px}
+
+.toast{position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom) + 90px); transform:translateX(-50%); background:var(--ink); color:#fff;
+  padding:10px 16px; border-radius:999px; font-size:15px; z-index:30; display:none; max-width:90vw; text-align:center}
+.toast.on{display:block}
+@media (prefers-reduced-motion:reduce){.sheet-box{animation:none}}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<section class="screen on" id="home">
+  <div class="col">
+    <div class="brand">
+      <div class="masks" aria-hidden="true">🦊🦉🐼</div>
+      <h1 class="display">Who's There?</h1>
+      <p class="muted" style="margin:0">Chat with a hidden friend. Guess who it is.</p>
+    </div>
+
+    <div class="panel resume" id="resume">
+      <p style="margin:0 0 10px">You're still in room <b id="resumeCode"></b>.</p>
+      <button class="btn" id="resumeBtn" type="button">Go back to the room</button>
+    </div>
+
+    <div class="panel">
+      <label class="lab" for="name">Your name</label>
+      <input class="field" id="name" maxlength="20" autocomplete="off" placeholder="The name your friends know" dir="auto">
+
+      <p class="lab" style="margin:16px 0 0">Chat time per round</p>
+      <div class="seg" id="secs" role="group" aria-label="Chat time per round">
+        <button type="button" data-s="120" aria-pressed="false">2 min</button>
+        <button type="button" data-s="180" aria-pressed="true">3 min</button>
+        <button type="button" data-s="300" aria-pressed="false">5 min</button>
+      </div>
+      <button class="btn" id="createBtn" type="button">Create a room</button>
+
+      <div class="orline">or join a friend's room</div>
+      <div class="joinrow">
+        <input class="field" id="code" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="CODE" aria-label="Room code">
+        <button class="btn ghost" id="joinBtn" type="button">Join</button>
+      </div>
+      <p class="err" id="homeErr" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<!-- LOBBY -->
+<section class="screen" id="lobby">
+  <div class="col stack">
+    <p class="center muted" style="margin:0">Room code</p>
+    <div class="code" id="codeTiles" aria-live="polite"></div>
+    <button class="btn ghost" id="shareBtn" type="button">Invite friends</button>
+
+    <div class="panel">
+      <p style="margin:0 0 4px; font-weight:600" id="pcount"></p>
+      <ul class="plist" id="lobbyList"></ul>
+    </div>
+
+    <div id="startArea"></div>
+
+    <div class="panel">
+      <p style="margin:0 0 6px; font-weight:600">How to play</p>
+      <ol class="steps">
+        <li>Everyone gets a secret animal mask and a hidden partner.</li>
+        <li>Chat and ask clever questions before time runs out.</li>
+        <li>Guess who's behind the mask. +3 for a right guess, +2 for every friend you fool.</li>
+      </ol>
+    </div>
+    <div class="center"><button class="link" id="leaveBtn" type="button">Leave room</button></div>
+  </div>
+</section>
+
+<!-- PLAY -->
+<section class="screen" id="play">
+  <div class="top">
+    <div class="mask" id="myMask" aria-hidden="true"></div>
+    <div class="who"><span class="muted small">You're wearing</span><b id="myAlias"></b></div>
+    <div class="timer" id="timer" aria-live="off">0:00</div>
+  </div>
+  <div class="mates" id="mates"></div>
+  <div class="log" id="log"></div>
+  <div class="dock" id="dock"></div>
+</section>
+
+<!-- REVEAL -->
+<section class="screen" id="reveal">
+  <div class="col">
+    <div class="masks center" id="revEmoji" aria-hidden="true" style="margin-top:6px"></div>
+    <h1 class="display headline" id="revHead"></h1>
+    <p class="center muted" id="revSub" style="margin:0 0 18px"></p>
+    <div class="stack" id="revGroups"></div>
+    <h2 class="sec">Scores</h2>
+    <div class="panel"><ul class="plist board" id="board"></ul></div>
+    <div class="stack" id="revActions" style="margin-top:16px"></div>
+  </div>
+</section>
+
+<!-- WAIT (joined while a round runs) -->
+<section class="screen" id="wait">
+  <div class="col center" style="padding-top:20vh">
+    <div class="masks" aria-hidden="true">⏳</div>
+    <h1 class="display" style="font-size:30px">A round is running</h1>
+    <p class="muted">You'll get a mask in the next round.</p>
+  </div>
+</section>
+
+<div class="sheet" id="sheet">
+  <div class="sheet-box" role="dialog" aria-modal="true" aria-labelledby="sheetT">
+    <h3 id="sheetT"></h3>
+    <p class="muted small" style="margin:0">Tap a name. You can change it until the reveal.</p>
+    <div id="sheetList"></div>
+    <button class="link" id="sheetClose" type="button" style="margin-top:8px">Close</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- backend (Supabase "First Project"; tables mask_*, used only through mask_* functions) ---------- */
+const SB_URL = "https://bhfgwlkzkbwcwyoypwhy.supabase.co";
+const SB_KEY = "sb_publishable_9YylflVQca-62NHsBKSTeA_GY896nj3";
+async function rpc(fn, args) {
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {
+    method: "POST", headers: { apikey: SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify(args)
+  });
+  const t = await r.text(); const j = t ? JSON.parse(t) : null;
+  if (!r.ok) throw new Error((j && j.message) || "Something went wrong. Try again.");
+  return j;
+}
+
+const QUESTIONS = [
+  "What did you have for breakfast today?", "What's your favourite food?", "Tea or coffee?",
+  "What's the last thing that made you laugh?", "Morning person or night person?", "Where would you travel tomorrow if you could?",
+  "What's your favourite season?", "Which app do you open most?", "What's a hobby you'd like to start?",
+  "What's your dream car?", "Sweet or salty snacks?", "What did you do last weekend?",
+  "What's your favourite colour?", "Cats or dogs?", "Which subject did you like most at school?",
+  "What's the best gift you ever got?", "Football or basketball?", "What's your go-to drink at a café?",
+  "If you could have any superpower, what would it be?", "What's one thing you're really good at?",
+  "Beach or mountains?", "What time did you wake up today?", "What's a food you can't stand?",
+  "What's the last place you visited?", "What's your favourite way to relax?"
+];
+
+/* ---------- state ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const KEY = "whosThere.session";
+let sess = null; try { sess = JSON.parse(localStorage.getItem(KEY)); } catch {}
+let S = null, msgs = [], lastId = 0, curRound = -1, offset = 0, pollT = null, seconds = 180, sheetAlias = null, lastStatus = "";
+
+function save(s) { sess = s; try { s ? localStorage.setItem(KEY, JSON.stringify(s)) : localStorage.removeItem(KEY); } catch {} }
+function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); }
+let toastT; function toast(t) { const e = $("toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove("on"), 2600); }
+const bdi = n => `<bdi>${esc(n)}</bdi>`;
+const nameOf = id => (S?.players.find(p => p.id === id) || {}).name || "Someone";
+
+/* ---------- home ---------- */
+const params = new URLSearchParams(location.search);
+if (params.get("room")) $("code").value = params.get("room").toUpperCase().slice(0, 4);
+try { $("name").value = localStorage.getItem("whosThere.name") || ""; } catch {}
+$("secs").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  seconds = +b.dataset.s;
+  $("secs").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+});
+function homeName() {
+  const n = $("name").value.trim();
+  if (!n) { $("homeErr").textContent = "Type your name first."; $("name").focus(); return null; }
+  try { localStorage.setItem("whosThere.name", n); } catch {}
+  return n;
+}
+async function enter(promise, btn) {
+  $("homeErr").textContent = ""; btn.disabled = true;
+  try { const r = await promise(); save({ code: r.code, token: r.token }); msgs = []; lastId = 0; curRound = -1; startPolling(); }
+  catch (e) { $("homeErr").textContent = e.message; }
+  finally { btn.disabled = false; }
+}
+$("createBtn").onclick = () => { const n = homeName(); if (n) enter(() => rpc("mask_create_room", { p_name: n, p_seconds: seconds }), $("createBtn")); };
+$("joinBtn").onclick = () => {
+  const n = homeName(); if (!n) return;
+  const c = $("code").value.trim().toUpperCase();
+  if (c.length !== 4) { $("homeErr").textContent = "Room codes have 4 letters."; $("code").focus(); return; }
+  enter(() => rpc("mask_join_room", { p_code: c, p_name: n }), $("joinBtn"));
+};
+$("code").addEventListener("input", e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, ""); });
+$("code").addEventListener("keydown", e => { if (e.key === "Enter") $("joinBtn").click(); });
+$("resumeBtn").onclick = () => startPolling();
+
+function goHome(note) {
+  stopPolling(); save(null); S = null; closeSheet();
+  $("resume").style.display = "none";
+  $("homeErr").textContent = note || "";
+  show("home");
+}
+
+/* ---------- polling ---------- */
+function startPolling() { stopPolling(); poll(); }
+function stopPolling() { clearTimeout(pollT); pollT = null; }
+async function poll() {
+  if (!sess) return;
+  try {
+    const st = await rpc("mask_state", { p_code: sess.code, p_token: sess.token, p_after: lastId });
+    apply(st);
+  } catch (e) { /* network hiccup: keep trying */ }
+  if (!sess) return;
+  const fast = S && S.room.status === "play";
+  pollT = setTimeout(poll, document.hidden ? 6000 : fast ? 1500 : 2500);
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && sess) startPolling(); });
+
+function apply(st) {
+  if (st.gone) return goHome(st.removed ? "You were removed from the room." : "That room has closed.");
+  if (st.room.round !== curRound) { curRound = st.room.round; msgs = []; lastId = 0; }
+  for (const m of st.messages) if (m.id > lastId) { msgs.push(m); lastId = m.id; }
+  offset = Date.parse(st.room.now) - Date.now();
+  const prev = lastStatus; S = st; lastStatus = st.room.status + ":" + st.room.round;
+  if (st.room.status === "lobby") renderLobby();
+  else if (st.room.status === "play") st.me.in_round ? renderPlay(prev !== lastStatus) : show("wait");
+  else renderReveal();
+}
+
+/* ---------- lobby ---------- */
+function renderLobby() {
+  show("lobby"); closeSheet();
+  const { room, me, players } = S;
+  $("codeTiles").innerHTML = [...room.code].map(c => `<span>${c}</span>`).join("");
+  $("pcount").textContent = `${players.length} player${players.length === 1 ? "" : "s"} in the room`;
+  $("lobbyList").innerHTML = players.map(p => `
+    <li><span class="av">${esc([...p.name][0] || "?")}</span>
+      <span class="nm">${bdi(p.name)}${p.id === me.id ? " (you)" : ""}</span>
+      ${p.host ? `<span class="tag">Host</span>` : ""}
+      ${me.host && p.id !== me.id ? `<button class="kick" type="button" data-kick="${p.id}" aria-label="Remove ${esc(p.name)}">×</button>` : ""}
+    </li>`).join("");
+  const host = players.find(p => p.host);
+  const enough = players.length >= 3;
+  $("startArea").innerHTML = me.host
+    ? `<button class="btn sun" id="startBtn" type="button" ${enough ? "" : "disabled"}>Start round</button>
+       <p class="center muted small" style="margin:8px 0 0">${enough ? `Each round lasts ${Math.round(room.seconds / 60)} min.` : "You need at least 3 players to start."}</p>`
+    : `<p class="center muted" style="margin:0">Waiting for ${esc(host ? host.name : "the host")} to start…</p>`;
+  if ($("startBtn")) $("startBtn").onclick = startRound;
+}
+$("lobbyList").addEventListener("click", async e => {
+  const b = e.target.closest("[data-kick]"); if (!b) return;
+  if (!confirm(`Remove ${nameOf(b.dataset.kick)} from the room?`)) return;
+  try { await rpc("mask_host_action", { p_code: sess.code, p_token: sess.token, p_action: "kick", p_player: b.dataset.kick }); startPolling(); }
+  catch (err) { toast(err.message); }
+});
+async function startRound() {
+  const b = $("startBtn") || $("nextBtn"); if (b) b.disabled = true;
+  try { await rpc("mask_start_round", { p_code: sess.code, p_token: sess.token }); startPolling(); }
+  catch (e) { toast(e.message); if (b) b.disabled = false; }
+}
+$("shareBtn").onclick = async () => {
+  const url = `${location.origin}${location.pathname}?room=${sess.code}`;
+  const text = `Join my Who's There? game. Room code: ${sess.code}`;
+  try {
+    if (navigator.share) await navigator.share({ title: "Who's There?", text, url });
+    else { await navigator.clipboard.writeText(`${text}\n${url}`); toast("Invite link copied"); }
+  } catch {}
+};
+$("leaveBtn").onclick = async () => {
+  if (!confirm("Leave this room?")) return;
+  try { await rpc("mask_leave", { p_code: sess.code, p_token: sess.token }); } catch (e) { return toast(e.message); }
+  goHome("");
+};
+
+/* ---------- play ---------- */
+function timeLeft() { return Math.max(0, Math.ceil((Date.parse(S.room.ends_at) - (Date.now() + offset)) / 1000)); }
+let chatOpen = null;
+function renderPlay(fresh) {
+  show("play");
+  const { me, mates } = S;
+  $("myMask").textContent = me.emoji;
+  $("myAlias").textContent = me.alias;
+  $("mates").innerHTML = mates.map(m => `
+    <button class="mate ${m.guess ? "set" : ""}" type="button" data-alias="${esc(m.alias)}">
+      <span class="em">${m.emoji}</span>
+      <span style="min-width:0"><small>${esc(m.alias)} is…</small><span class="g">${m.guess ? bdi(nameOf(m.guess)) : "Tap to guess"}</span></span>
+    </button>`).join("");
+  renderLog(fresh);
+  if (fresh) chatOpen = null;
+  tick();
+}
+function renderLog(force) {
+  const log = $("log");
+  const nearBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+  const mateNames = S.mates.map(m => `${m.emoji} ${m.alias}`).join(" and ");
+  const html = msgs.length ? msgs.map(m => `
+    <div class="msg ${m.mine ? "mine" : ""}">
+      ${m.mine ? "" : `<span class="em" aria-hidden="true">${m.emoji}</span>`}
+      <div class="bub" dir="auto">${m.mine ? "" : `<small>${esc(m.alias)}</small>`}${esc(m.body)}</div>
+    </div>`).join("")
+    : `<p class="empty">You're chatting with ${esc(mateNames)}.<br>Say hi, or tap 💡 for a question idea.</p>`;
+  if (log.dataset.n !== String(msgs.length) || force) {
+    log.innerHTML = html; log.dataset.n = msgs.length;
+    if (nearBottom || force) log.scrollTop = log.scrollHeight;
+  }
+}
+function tick() {
+  if (!S || S.room.status !== "play" || !$("play").classList.contains("on")) return;
+  const left = timeLeft();
+  $("timer").textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
+  $("timer").classList.toggle("low", left <= 20);
+  const open = left > 0;
+  if (open !== chatOpen) { chatOpen = open; drawDock(); }
+  if (!open) updateClosed();
+}
+setInterval(tick, 500);
+
+function drawDock() {
+  const d = $("dock");
+  if (chatOpen) {
+    d.innerHTML = `<form class="composer" id="composer" autocomplete="off">
+        <button class="round ask" type="button" id="askBtn" aria-label="Question idea">💡</button>
+        <input class="field" id="msg" maxlength="300" placeholder="Type a message" dir="auto" enterkeyhint="send">
+        <button class="round send" type="submit" aria-label="Send">➤</button>
+      </form>`;
+    $("composer").onsubmit = sendMsg;
+    $("askBtn").onclick = () => { const i = $("msg"); i.value = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)]; i.focus(); };
+  } else {
+    d.innerHTML = `<div class="closed"><p><b>Time's up.</b> Lock in your guess above.</p>
+      <p class="muted small" id="progress"></p><div id="revealArea"></div></div>`;
+    updateClosed();
+  }
+}
+function updateClosed() {
+  if (!$("progress")) return;
+  $("progress").textContent = `${S.done} of ${S.in_round} players have guessed`;
+  const ra = $("revealArea");
+  if (S.me.host && !ra.firstChild) {
+    ra.innerHTML = `<button class="btn ghost" id="revealBtn" type="button">Reveal now</button>`;
+    $("revealBtn").onclick = async () => {
+      try { await rpc("mask_host_action", { p_code: sess.code, p_token: sess.token, p_action: "reveal" }); startPolling(); }
+      catch (e) { toast(e.message); }
+    };
+  }
+}
+let sending = false;
+async function sendMsg(e) {
+  e.preventDefault();
+  const i = $("msg"), body = i.value.trim();
+  if (!body || sending) return;
+  sending = true; i.value = "";
+  try { await rpc("mask_send", { p_code: sess.code, p_token: sess.token, p_body: body }); startPolling(); }
+  catch (err) { i.value = body; toast(err.message); }
+  finally { sending = false; i.focus(); }
+}
+
+/* guess sheet */
+$("mates").addEventListener("click", e => {
+  const b = e.target.closest(".mate"); if (!b) return;
+  sheetAlias = b.dataset.alias; drawSheet(); $("sheet").classList.add("on");
+});
+function drawSheet() {
+  const m = S.mates.find(x => x.alias === sheetAlias); if (!m) return closeSheet();
+  $("sheetT").textContent = `Who is ${m.emoji} ${m.alias}?`;
+  $("sheetList").innerHTML = S.players.filter(p => p.id !== S.me.id).map(p => `
+    <button class="pick" type="button" data-id="${p.id}" aria-pressed="${m.guess === p.id}">
+      <span class="av">${esc([...p.name][0] || "?")}</span><span>${bdi(p.name)}</span></button>`).join("");
+}
+function closeSheet() { $("sheet").classList.remove("on"); sheetAlias = null; }
+$("sheetClose").onclick = closeSheet;
+$("sheet").addEventListener("click", e => { if (e.target.id === "sheet") closeSheet(); });
+$("sheetList").addEventListener("click", async e => {
+  const b = e.target.closest(".pick"); if (!b) return;
+  const alias = sheetAlias, id = b.dataset.id;
+  const m = S.mates.find(x => x.alias === alias); if (m) m.guess = id;
+  closeSheet(); renderPlay(false);
+  try { await rpc("mask_guess", { p_code: sess.code, p_token: sess.token, p_alias: alias, p_guessed: id }); startPolling(); }
+  catch (err) { toast(err.message); }
+});
+
+/* ---------- reveal ---------- */
+function renderReveal() {
+  show("reveal"); closeSheet();
+  const { me, players, reveal } = S;
+  const G = reveal.guesses;
+  const delta = {};
+  for (const g of G) {
+    if (g.correct) delta[g.guesser] = (delta[g.guesser] || 0) + 3;
+    else delta[g.target] = (delta[g.target] || 0) + 2;
+  }
+  // headline about me
+  const mineG = G.filter(g => g.guesser === me.id);
+  const right = mineG.filter(g => g.correct).length;
+  const fooled = G.filter(g => g.target === me.id && !g.correct).length;
+  let head, emoji;
+  if (!me.in_round) { head = "Round over"; emoji = "🎭"; }
+  else if (mineG.length && right === mineG.length) { head = "You saw through the mask!"; emoji = "🎯"; }
+  else if (fooled) { head = "Nobody saw through you!"; emoji = "🥸"; }
+  else if (right) { head = "Half right!"; emoji = "😄"; }
+  else { head = "They fooled you!"; emoji = "🙈"; }
+  $("revEmoji").textContent = emoji;
+  $("revHead").textContent = head;
+  $("revSub").textContent = `Round ${S.room.round}: you got +${delta[me.id] || 0} points`;
+
+  const mineFirst = [...reveal.groups].sort((a, b) =>
+    (b.members.some(x => x.id === me.id) ? 1 : 0) - (a.members.some(x => x.id === me.id) ? 1 : 0));
+  $("revGroups").innerHTML = mineFirst.map(gr => {
+    const ids = gr.members.map(x => x.id);
+    const alias = id => gr.members.find(x => x.id === id);
+    const lines = G.filter(g => ids.includes(g.guesser)).map(g => {
+      const t = alias(g.target);
+      return `<li><span><b>${bdi(nameOf(g.guesser))}</b> said ${t ? t.emoji + " " + esc(t.alias) : "?"} was <b>${bdi(nameOf(g.guessed))}</b></span>
+        <span class="pts ${g.correct ? "ok" : "no"}">${g.correct ? "✓ +3" : `✗ ${bdi(nameOf(g.target))} +2`}</span></li>`;
+    }).join("");
+    const isMine = ids.includes(me.id);
+    return `<div class="card ${isMine ? "mine" : ""}">
+      ${isMine ? `<p class="small muted" style="margin:0 0 8px">Your chat</p>` : ""}
+      <div class="unmask">${gr.members.map(x => `<div><span class="em">${x.emoji}</span><span>${esc(x.alias)} was ${bdi(x.name)}</span></div>`).join("")}</div>
+      <ul class="gl">${lines || `<li class="muted">No guesses in this chat.</li>`}</ul></div>`;
+  }).join("");
+
+  $("board").innerHTML = [...players].sort((a, b) => b.score - a.score).map(p => `
+    <li><span class="av">${esc([...p.name][0] || "?")}</span>
+      <span class="nm">${bdi(p.name)}${p.id === me.id ? " (you)" : ""}</span>
+      ${delta[p.id] ? `<span class="dl">+${delta[p.id]}</span>` : ""}
+      <span class="sc">${p.score}</span></li>`).join("");
+
+  const host = players.find(p => p.host);
+  const enough = players.length >= 3;
+  $("revActions").innerHTML = me.host
+    ? `<button class="btn sun" id="nextBtn" type="button" ${enough ? "" : "disabled"}>Next round</button>
+       ${enough ? "" : `<p class="center muted small" style="margin:0">You need at least 3 players.</p>`}
+       <button class="btn ghost" id="endBtn" type="button">End game</button>`
+    : `<p class="center muted" style="margin:0">Waiting for ${esc(host ? host.name : "the host")} to start the next round…</p>
+       <div class="center"><button class="link" id="leave2" type="button">Leave room</button></div>`;
+  if ($("nextBtn")) $("nextBtn").onclick = startRound;
+  if ($("endBtn")) $("endBtn").onclick = async () => {
+    if (!confirm("End the game for everyone?")) return;
+    try { await rpc("mask_host_action", { p_code: sess.code, p_token: sess.token, p_action: "end" }); goHome("Game ended."); }
+    catch (e) { toast(e.message); }
+  };
+  if ($("leave2")) $("leave2").onclick = () => $("leaveBtn").click();
+}
+
+/* ---------- boot ---------- */
+if (sess) {
+  if (params.get("room") && params.get("room").toUpperCase() !== sess.code) {
+    $("resumeCode").textContent = sess.code; $("resume").style.display = "block";
+  } else startPolling();
+}
+</script>
+</body>
+</html>
