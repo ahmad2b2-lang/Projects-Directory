@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Trunkline 101</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one module per screen, chip rail on top, stepper cards for the three sequences. Light only, by owner's request. */
+:root{
+  --paper:#f5f7f6;
+  --card:#ffffff;
+  --ink:#16252e;
+  --muted:#5a6b72;
+  --line:#d8e0e0;
+  --steel:#1f4e5f;
+  --steel-soft:#e3edef;
+  --marker:#f2b705;
+  --marker-soft:#fff4cc;
+  --ok:#2e7d4f;
+  --warn:#b45309;
+  --warn-soft:#fdf0e1;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--steel)}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header */
+header.top{background:var(--steel);color:#fff}
+header.top .wrap{padding-block:18px 14px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:30px;letter-spacing:.02em;line-height:1;text-transform:uppercase}
+.brand span{color:var(--marker)}
+.brand-sub{font-size:13px;opacity:.85;margin-top:4px}
+.kp{font-family:var(--f-mono);font-size:12px;background:var(--marker);color:var(--ink);padding:4px 8px;border-radius:3px;white-space:nowrap}
+
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--card);border-bottom:1px solid var(--line)}
+nav.rail .wrap{display:flex;gap:6px;overflow-x:auto;padding-block:10px;scrollbar-width:none}
+nav.rail .wrap::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 14px var(--f-body);padding:7px 12px;border-radius:999px;cursor:pointer;display:flex;gap:6px;align-items:center}
+.chip b{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-weight:500}
+.chip[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip[aria-current="true"] b{color:var(--marker)}
+.chip.seq::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--marker)}
+.chip:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--marker);outline-offset:2px}
+
+main .wrap{padding-block:22px 40px}
+section.mod{display:flex;flex-direction:column;gap:18px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:36px;font-weight:700;text-transform:uppercase;letter-spacing:.01em}
+h2{font-size:24px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:var(--steel)}
+h3{font-size:20px;font-weight:600}
+p{margin:0;max-width:65ch}
+.lead{font-size:18px;color:var(--ink)}
+.muted{color:var(--muted)}
+.block{display:flex;flex-direction:column;gap:10px}
+ul.clean{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.mono{font-family:var(--f-mono);font-size:.88em}
+
+.note{background:var(--marker-soft);border-left:4px solid var(--marker);padding:12px 14px;border-radius:0 6px 6px 0}
+.note strong{display:block;font-family:var(--f-display);font-size:17px;text-transform:uppercase;letter-spacing:.03em}
+
+/* chain diagram */
+.chain{display:flex;flex-direction:column;gap:0}
+.node{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px}
+.node.you{border:2px solid var(--marker);background:var(--marker-soft)}
+.node .ic{width:44px;height:44px;border-radius:6px;background:var(--steel-soft);display:grid;place-items:center}
+.node.you .ic{background:var(--marker)}
+.node h3{font-size:18px}
+.node p{font-size:14px;color:var(--muted)}
+.node.you p{color:var(--ink)}
+.arrow{height:22px;margin-left:33px;border-left:3px dashed var(--steel);width:0}
+
+/* gantt */
+.gantt{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:9px}
+.g-row{display:grid;grid-template-columns:104px 1fr;gap:10px;align-items:center;font-size:14px}
+.g-track{position:relative;height:16px;background:var(--steel-soft);border-radius:3px}
+.g-bar{position:absolute;top:0;bottom:0;background:var(--steel);border-radius:3px}
+.g-bar.hot{background:var(--marker)}
+.g-axis{display:grid;grid-template-columns:104px 1fr;gap:10px;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.g-axis div:last-child{display:flex;justify-content:space-between}
+
+/* term grid */
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.term{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.term .t{font-family:var(--f-mono);font-size:13px;color:var(--steel);font-weight:500}
+.term .d{font-size:15px}
+
+.tbl{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:460px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-display);font-size:15px;text-transform:uppercase;letter-spacing:.03em;background:var(--steel-soft);color:var(--steel)}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.xsec{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;justify-content:center}
+.xsec svg{width:100%;max-width:420px;height:auto}
+
+/* stepper */
+.stepper{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.st-head{background:var(--ink);color:#fff;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.st-count{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.st-count span:last-child{color:var(--marker)}
+.st-track{display:flex;gap:3px}
+.st-track button{flex:1;height:8px;border:0;padding:0;border-radius:2px;background:#3a4c56;cursor:pointer}
+.st-track button.done{background:var(--marker)}
+.st-track button.now{background:#fff}
+.st-body{padding:18px 16px;display:flex;flex-direction:column;gap:14px;min-height:340px}
+.st-num{font-family:var(--f-display);font-weight:700;font-size:56px;line-height:.9;color:var(--marker);-webkit-text-stroke:1px var(--ink)}
+.st-title{display:flex;gap:14px;align-items:flex-end}
+.st-title h3{font-size:26px;text-transform:uppercase;letter-spacing:.01em}
+.st-fact{align-self:flex-start;font-family:var(--f-mono);font-size:12.5px;background:var(--steel-soft);color:var(--steel);padding:5px 9px;border-radius:4px}
+.st-sec{display:flex;flex-direction:column;gap:4px}
+.st-sec .lab{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.st-watch{background:var(--warn-soft);border-radius:6px;padding:10px 12px}
+.st-watch .lab{color:var(--warn)}
+.st-nav{display:flex;gap:10px;padding:12px 16px 16px;border-top:1px solid var(--line)}
+.btn{flex:1;font:700 17px var(--f-display);text-transform:uppercase;letter-spacing:.05em;padding:13px 10px;border-radius:6px;border:2px solid var(--ink);cursor:pointer;background:var(--card);color:var(--ink)}
+.btn.primary{background:var(--marker);border-color:var(--marker);color:var(--ink);flex:2}
+.btn:disabled{opacity:.35;cursor:default}
+.st-body.anim{animation:slide .28s ease}
+@keyframes slide{from{opacity:.2;transform:translateX(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.st-body.anim{animation:none}}
+.st-list{margin-top:4px}
+.st-list summary{cursor:pointer;font-weight:600;color:var(--steel)}
+.st-list ol{margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+.st-list li button{background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.st-list li.cur button{font-weight:700;text-decoration-color:var(--marker)}
+
+/* quiz */
+.quiz{display:flex;flex-direction:column;gap:8px}
+.quiz details{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.quiz summary{cursor:pointer;font-weight:600;list-style:none;display:flex;gap:8px}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"Q";font-family:var(--f-mono);font-size:12px;background:var(--steel);color:#fff;border-radius:3px;padding:1px 6px;height:fit-content;margin-top:2px}
+.quiz details[open] summary{margin-bottom:6px}
+.quiz details p{color:var(--ink);padding-left:30px}
+
+.pager{display:flex;gap:10px;margin-top:10px}
+.pager button{flex:1;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;cursor:pointer;font:inherit;color:var(--ink);min-width:0}
+.pager button.next{text-align:right;border-color:var(--steel)}
+.pager small{display:block;font-family:var(--f-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.pager span{font-family:var(--f-display);font-size:18px;font-weight:600}
+
+.org{display:flex;flex-direction:column;gap:8px}
+.org .lvl{display:flex;gap:8px;flex-wrap:wrap}
+.org .box{flex:1 1 140px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.org .box b{font-family:var(--f-display);font-size:17px;text-transform:uppercase;display:block}
+.org .box span{font-size:14px;color:var(--muted)}
+.org .box.you{border:2px solid var(--marker);background:var(--marker-soft)}
+
+/* contractor tips */
+.tips{display:flex;flex-direction:column;gap:8px}
+.tip-btns{display:flex;gap:8px;flex-wrap:wrap}
+.tip-btn{flex:1 1 150px;display:flex;align-items:center;gap:9px;font:600 14.5px/1.25 var(--f-body);padding:10px 12px;border-radius:6px;cursor:pointer;text-align:left;border:1.5px solid}
+.tip-btn i{font-style:normal;font-family:var(--f-mono);font-size:12px;flex:0 0 22px;height:22px;border-radius:50%;display:grid;place-items:center;border:1.5px solid currentColor}
+.tip-btn.mis{background:var(--warn-soft);border-color:#ebc79f;color:#7a3a06}
+.tip-btn.sk{background:var(--steel-soft);border-color:#b9cfd5;color:var(--steel)}
+.tip-btn.mis[aria-expanded="true"]{background:var(--warn);border-color:var(--warn);color:#fff}
+.tip-btn.sk[aria-expanded="true"]{background:var(--steel);border-color:var(--steel);color:#fff}
+.tip-panel{border-radius:0 6px 6px 0;padding:12px 14px;display:flex;flex-direction:column;gap:10px;animation:fade .2s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.tip-panel{animation:none}}
+.tip-panel.mis{background:var(--warn-soft);border-left:4px solid var(--warn)}
+.tip-panel.sk{background:var(--steel-soft);border-left:4px solid var(--steel)}
+.tip-panel .lab{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase}
+.tip-panel.mis .lab{color:var(--warn)}
+.tip-panel.sk .lab{color:var(--steel)}
+.tip-panel ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.sk-item{display:flex;flex-direction:column;gap:3px;padding-top:8px;border-top:1px solid #c9d9dd}
+.sk-item:first-of-type{border-top:0;padding-top:0}
+.sk-item .claim{font-weight:700}
+.sk-item .claim::before{content:"Contractor says: ";font-family:var(--f-mono);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.sk-item .check::before{content:"Check: ";font-weight:700;color:var(--steel)}
+
+.search{width:100%;font:16px var(--f-body);padding:12px 14px;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.gl{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:8px}
+.gl div{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:15px}
+.gl div:last-child{border-bottom:0}
+.gl dt,.gl b{font-family:var(--f-mono);font-size:13px;color:var(--steel);font-weight:500;padding-top:2px}
+.gl-empty{padding:14px;color:var(--muted)}
+footer{font-size:13px;color:var(--muted);padding-block:0 30px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div>
+      <div class="brand">Trunkline <span>101</span></div>
+      <div class="brand-sub">Gas pipeline basics for a new project lead</div>
+    </div>
+    <div class="kp">KP 0+000 → 30+000</div>
+  </div>
+</header>
+
+<nav class="rail" aria-label="Modules"><div class="wrap" id="rail"></div></nav>
+
+<main><div class="wrap" id="view"></div></main>
+<footer><div class="wrap">Figures are checked against public summaries of API 5L, ASME B31.8, 49 CFR 192, an INGAA Foundation right-of-way study, T.D. Williamson gauging data and reported project welding rates. They are for orientation only. Your project specification, the client standards and the applicable code always govern.</div></footer>
+
+<script>
+const ICON = {
+  well:'<svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#1f4e5f" stroke-width="2"><path d="M13 3v20M8 23h10M9 8h8M9 13h8"/></svg>',
+  plant:'<svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#1f4e5f" stroke-width="2"><path d="M3 23V12l6 4V12l6 4V5h6v18z"/></svg>',
+  pipe:'<svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#16252e" stroke-width="2.2"><path d="M2 10h22M2 16h22"/><path d="M8 10v6M18 10v6"/></svg>',
+  station:'<svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#1f4e5f" stroke-width="2"><circle cx="13" cy="13" r="8"/><path d="M13 5v16M5 13h16"/></svg>',
+  user:'<svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#1f4e5f" stroke-width="2"><path d="M4 23V11l9-7 9 7v12z"/><path d="M10 23v-7h6v7"/></svg>'
+};
+
+const MODULES = [
+ {id:'big-picture', n:'01', name:'Big picture'},
+ {id:'pipe-basics', n:'02', name:'Pipe basics'},
+ {id:'manufacturing', n:'03', name:'Manufacturing', seq:true},
+ {id:'design', n:'04', name:'Design'},
+ {id:'procurement', n:'05', name:'Procurement'},
+ {id:'construction', n:'06', name:'Construction', seq:true},
+ {id:'commissioning', n:'07', name:'Testing & commissioning', seq:true},
+ {id:'quality-safety', n:'08', name:'Quality & safety'},
+ {id:'pm-view', n:'09', name:'The PM view'},
+ {id:'glossary', n:'10', name:'Glossary'}
+];
+
+/* ---------- step sequences ---------- */
+const SEQ = {
+manufacturing:[
+ {t:'Steelmaking',f:'Chemistry is fixed here',w:'Iron ore or scrap is melted and refined into steel. The mill adjusts carbon, manganese and micro-alloys (niobium, vanadium, titanium) to hit the strength and weldability the grade needs.',y:'Everything later depends on this chemistry. Low carbon equivalent makes the pipe easier to weld in the field. For sour gas, sulfur must be kept very low to resist cracking.',p:'Check the order specifies sweet or sour service. Sour service adds HIC/SSC testing and narrows which mills can supply.'},
+ {t:'Continuous casting',f:'Output: slabs',w:'Liquid steel is cast into long solid slabs, cut to length and given a heat number. That heat number follows the steel all the way to the field.',y:'The heat number is how you trace any pipe joint back to its steel batch and test results.',p:'Traceability starts here. Ask early how the contractor will track heat and pipe numbers into the weld map.'},
+ {t:'Rolling the plate or coil',f:'TMCP rolling',w:'Slabs are reheated and rolled thin. Thick wall, large diameter pipe uses plate. Smaller sizes often use coiled strip. Controlled rolling and cooling (TMCP) gives strength and toughness without extra alloying.',y:'Rolling sets the wall thickness and the toughness that stops cracks from running along a pipeline.',p:'Plate or coil supply is often the longest wait in the pipe chain. Mill slots are booked months ahead.'},
+ {t:'Plate inspection',f:'100% ultrasonic scan',w:'Each plate or coil is scanned by ultrasonic testing (UT) to find internal laminations, and checked for size and surface defects.',y:'A lamination left in the plate can become a defect in the finished pipe body.',p:'Rejection rates at this stage affect delivery dates. Ask the inspector for weekly yield figures.'},
+ {t:'Edge preparation',f:'Edges milled and bevelled',w:'The plate edges that will meet in the long seam are milled straight and bevelled so the welding machine can fuse them fully.',y:'A good seam weld needs clean, accurate edges.',p:'Routine step. It matters only if seam weld repairs start rising.'},
+ {t:'Forming the pipe',f:'JCOE, UOE or roll forming',w:'The flat plate is bent into a round "can". For LSAW pipe the plate is pressed in stages (J, then C, then O shape). For ERW or HFW pipe, strip runs through a series of forming rolls.',y:'Forming sets the roundness. Out-of-round pipe is hard to line up and weld in the field.',p:'Ovality tolerance is in the spec. Field welders will complain fast if ends do not match.'},
+ {t:'Seam welding',f:'SAW for LSAW · HFW for ERW',w:'The long seam is welded. LSAW pipe is welded by submerged arc welding (SAW), inside and outside. ERW/HFW pipe is joined by heating the edges with high frequency current and pressing them together, with no filler metal.',y:'The seam is the weakest point of a pipe if it is done poorly. It gets the closest inspection.',p:'Seam weld repair rates are a good early signal of mill quality.'},
+ {t:'Mechanical expansion',f:'Expanded about 1%',w:'For LSAW pipe, a tool expands the pipe from inside along its full length to make it perfectly round and to even out internal stresses.',y:'Expansion gives accurate diameter at the ends, which speeds up field welding.',p:'Mostly a mill concern. Confirm it is in the procedure for LSAW orders.'},
+ {t:'Mill hydrostatic test',f:'Every joint · held seconds, not hours',w:'Each pipe is capped, filled with water and pressurised to a level set by API 5L for its grade and size, often a hoop stress near 90% of the minimum yield strength. The hold is short, a matter of seconds per joint (API 5L uses 5 or 10 seconds depending on size).',y:'Proves every single pipe joint can hold pressure before it leaves the mill.',p:'Recorded per pipe. The test charts or digital records become part of the dossier.'},
+ {t:'Final NDT',f:'UT of seam · X-ray of ends',w:'Automatic UT scans the full seam. The pipe ends and any repairs are X-rayed. Pipe ends are also checked for laminations, because that is where the field weld will go.',y:'Catches seam defects the hydrotest may not reveal.',p:'Third-party inspectors (yours or the client\'s) usually witness this.'},
+ {t:'End finishing and dimensions',f:'Typical joint: 12 m',w:'Ends are faced and bevelled (often 30°) for field welding. Length, straightness, diameter, ovality and wall thickness are measured and recorded.',y:'Joint length drives how many field welds you need. At 12 m per joint, 30 km is roughly 2,500 joints and about 2,500 field welds.',p:'Your weld count, crew sizing and NDT budget all start from this number.'},
+ {t:'Mechanical testing and certificates',f:'PSL2: EN 10204 3.1 or 3.2 certificate',w:'Samples per test lot are pulled for tensile, Charpy impact, DWTT and hardness tests (plus HIC/SSC under API 5L Annex H for sour service). PSL2 also caps the yield-to-tensile ratio, at 0.93 for X42 and above. Results go on a Mill Test Certificate tied to heat and pipe numbers.',y:'The certificate is the legal proof the pipe meets API 5L and your spec.',p:'No certificate, no acceptance. Make sure certificates arrive with the pipe, not months later.'},
+ {t:'Coating',f:'3LPE or FBE · holiday tested',w:'The pipe is shot-blasted, heated and coated. Three-layer polyethylene (3LPE) is common for buried lines: FBE primer, adhesive, then a thick PE outer layer. Ends are left bare ("cutback") for field welding. Every pipe is checked with a holiday detector for pinholes.',y:'Coating is the first line of defence against corrosion. Cathodic protection is the second.',p:'The coating plant is often a separate company from the pipe mill. That adds one more handover and one more set of records.'},
+ {t:'Marking, storage and shipping',f:'Stencilled pipe number',w:'Each joint is stencilled with grade, size, heat number and pipe number. Pipe is stacked on padded supports, end caps fitted, and shipped by sea and truck to the project pipe yard.',y:'Damage to coating or bevels in transport is common and costly.',p:'Agree who inspects on receipt and how damaged pipe is logged and repaired.'}
+],
+construction:[
+ {t:'Survey and staking out',f:'Route pegged every KP',w:'Surveyors mark the centreline and the edges of the working strip (Right of Way, ROW) using the alignment sheets. They locate existing services, crossings and access roads.',y:'Every crew that follows works to these pegs.',p:'Land access and permits must be secured before crews mobilise. Missing permits are a classic cause of early delay.'},
+ {t:'ROW clearing and grading',f:'Strip width grows with pipe size: ~24 m (8–16") to ~38 m (40–42")',w:'Dozers and graders clear and level the strip so heavy equipment can work. Topsoil is stripped and stored separately if it will be put back. An industry study (INGAA Foundation) suggests baseline construction widths of about 24 m for 8–16" pipe, 29 m for 18–24", 34 m for 30–36" and 38 m for 40–42", adjusted for soil and terrain.',y:'A flat, stable ROW lets every following crew move quickly.',p:'Watch for scope creep where terrain is rocky or sandy and needs extra work.'},
+ {t:'Pipe haul and stringing',f:'Joints laid end to end',w:'Coated pipe is trucked from the pipe yard and laid out along the ROW on sandbags or skids, next to where the trench will be.',y:'Stringing ahead of the welders keeps the welding crew fed with pipe.',p:'Pipe must be placed in the order of the pipe book (wall thickness changes at crossings, etc.). Coating damage during handling is a frequent issue.'},
+ {t:'Field bending',f:'Cold bends on site',w:'Where the route changes direction or follows ground profile, a bending machine bends individual joints cold to the angles in the bend list. Sharper turns use factory-made induction bends.',y:'Bends let the pipe follow the trench without stress.',p:'Bend counts and angles come from the design. Missing bends stop the welding crew.'},
+ {t:'Line-up and welding',f:'Example rates: ~500 m/day (auto, 30") · 71 welds/shift (56", 6 stations)',w:'Pipes are aligned with internal clamps and welded in layers. A front-end crew runs the root and hot pass; firing-line crews add fill and cap passes. Welding may be manual, semi-automatic or fully automatic. Rates vary a lot with diameter, wall, terrain and heat. Reported examples: about 500 m a day with automatic welding on 30" pipe, and 71 welds in one day shift on a 56" line in Saudi Arabia.',y:'Welding is the heartbeat of the spread. Production here sets the schedule. Desert heat alone can cut productivity noticeably.',p:'Track welds per day and the repair rate daily. A rising repair rate is your first warning sign.'},
+ {t:'NDT of field welds',f:'RT or AUT on 100% of mainline welds',w:'Each weld is inspected by radiography (RT, X-ray) or automated ultrasonic testing (AUT). Defective welds are repaired or cut out and re-welded.',y:'Proves weld integrity before the pipe is buried.',p:'NDT must keep pace with welding. A backlog means rework is found late, after the line has moved on.'},
+ {t:'Field joint coating',f:'Heat-shrink sleeves',w:'The bare cutback at each weld is blasted and covered with a heat-shrink sleeve or liquid coating, then holiday tested.',y:'An uncoated joint is a corrosion point every 12 m.',p:'Application quality varies by crew. Peel tests and holiday checks are your proof.'},
+ {t:'Trenching',f:'Code minimum cover ~0.75–0.9 m in soil; many owners ask ≥ 1 m',w:'Excavators or trenching machines dig the trench to the depth on the drawings. Codes set minimum cover by location class and soil: commonly around 0.75–0.9 m (30–36 in) in normal soil, less in solid rock, more at roads, ditches and farmland. Many owner specs require 1 m or more. Rocky ground may need ripping or blasting.',y:'Depth of cover protects the pipe from damage and is a code requirement.',p:'Open trench is a safety hazard. Keep trench open time short and barricaded.'},
+ {t:'Padding and lowering-in',f:'Sidebooms lift the string',w:'The trench bottom is padded with sand or sifted soil. Sidebooms lift long welded sections and lower them in without damaging the coating. The coating is checked one last time.',y:'Rocks touching the pipe can damage coating and cause dents.',p:'A heavy-lift operation. Lift plans and exclusion zones are essential.'},
+ {t:'Backfill',f:'Padding, then native soil',w:'The pipe is surrounded with fine padding, then the trench is filled and compacted. Warning tape is laid above the pipe.',y:'Locks the pipe in place and protects it.',p:'Record the as-built position before the trench closes. It is hard to get afterwards.'},
+ {t:'Special crossings',f:'HDD · auger bore · open cut',w:'Roads, wadis, railways and other pipelines are crossed by horizontal directional drilling (HDD), auger boring under the road, or open cut where allowed. Crossings often use thicker pipe or casing.',y:'Crossings are high risk for cost and schedule. Each one is a small project.',p:'Start permits and specialist subcontracts early. One stuck HDD can delay the whole line.'},
+ {t:'Tie-ins',f:'Golden welds',w:'Separate tie-in crews join the long sections, the crossings and the valve stations. Some final closure welds cannot be pressure tested and get extra NDT ("golden welds").',y:'Tie-ins connect everything into one continuous line.',p:'Golden welds need the client\'s approval and full inspection records.'},
+ {t:'Above-ground facilities',f:'Valves · scraper traps · CP',w:'Block valve stations, pig launcher and receiver (scraper traps), cathodic protection test posts and ground beds, and fences are installed.',y:'These let the line be isolated, cleaned, inspected and protected.',p:'These need civil, mechanical, electrical and instrument trades together. Coordination is the challenge.'},
+ {t:'Reinstatement and as-builts',f:'Marker posts along the route',w:'The ROW is cleaned up, topsoil replaced, fences and roads restored. Pipeline marker posts are installed. Survey records the final as-built route.',y:'Leaves land in agreed condition and records where the pipe really is.',p:'Landowner sign-offs and as-built drawings are needed for handover.'}
+],
+commissioning:[
+ {t:'Mechanical completion',f:'Punch list A and B',w:'The line and stations are walked down against the drawings. Outstanding items are listed: A items must be fixed before testing, B items can follow.',y:'You only test what is actually finished.',p:'A long A-list means testing will slip. Track it weekly.'},
+ {t:'Cleaning and gauging',f:'Gauge plate ≈ 92–95% of the inside diameter',w:'Pigs (plugs pushed through by air or water) sweep out debris. A gauging pig carries a thin aluminium plate slightly smaller than the bore, commonly about 92–95% of the inside diameter (your spec sets the exact figure). If it comes out undamaged, there are no major dents or weld protrusions.',y:'Debris or dents would damage instruments and the line later.',p:'A damaged gauge plate means finding and fixing a dent before hydrotest.'},
+ {t:'Hydrotest filling',f:'Filtered, treated water',w:'The line is filled with clean water, often treated with corrosion inhibitor and biocide, pushed in behind a pig to drive out air.',y:'Water is used because it barely compresses, so a failure releases little energy.',p:'Water source, permits and disposal plan are needed months ahead.'},
+ {t:'Pressure test',f:'~1.25× MAOP (rural) to ~1.4–1.5× (populated) · hold ≥ 8 h, often 24 h',w:'Pressure is raised to the test level set by the code and spec, then held while pressure and temperature are recorded. Gas codes tie the test level to location class: around 1.25× the operating pressure in rural areas, rising to about 1.4–1.5× near people, without exceeding roughly 90–100% of SMYS. Hold times differ by rulebook: US federal rules require at least 8 hours for a strength test, and many owner specs ask for 24 hours. Water temperature must settle first, because temperature changes move the pressure.',y:'Proves the welded line is strong and leak-free before gas goes in.',p:'The client witnesses and signs the test record. A failure means locating the leak, cutting out and re-testing.'},
+ {t:'Dewatering',f:'Pig trains push water out',w:'Pigs driven by compressed air push the test water out of the line.',y:'Water left in a gas line causes corrosion and hydrates (ice-like blockages).',p:'Treated water may need treatment before discharge.'},
+ {t:'Drying',f:'Target dew point often −20 °C or lower',w:'Super-dry air (with foam pigs) or vacuum drying removes the remaining moisture until the dew point at the outlet meets the target. In vacuum drying, pressure is pulled down until trapped water boils off at ambient temperature, then held to prove the line stays dry.',y:'Prevents corrosion and hydrate formation in service.',p:'Drying can take longer than expected on long or low-lying sections.'},
+ {t:'Baseline inspection',f:'Caliper or intelligent pig',w:'A geometry (caliper) pig, and sometimes an intelligent pig, records the internal shape and wall condition.',y:'Gives a "fingerprint" to compare against in future inspections.',p:'Not always in scope. Check the contract.'},
+ {t:'Nitrogen purge and pack',f:'Oxygen below the procedure limit',w:'Air is displaced with nitrogen, often several line volumes of it, until oxygen at the outlet falls below the limit in the commissioning procedure. The line is then held under low nitrogen pressure.',y:'Gas mixed with air can be explosive. Nitrogen is the safe barrier.',p:'Nitrogen supply logistics and confined-space risks need planning.'},
+ {t:'Cathodic protection energized',f:'Pipe-to-soil potential checked',w:'The CP system is switched on and potentials are measured at test posts along the line to confirm the pipe is protected.',y:'CP protects steel wherever the coating has small defects.',p:'An early survey sets the baseline for future integrity checks.'},
+ {t:'Gas-in and start-up',f:'Slow, controlled pressurising',w:'Gas is introduced slowly behind the nitrogen, pressure is raised in steps, and leaks are checked at flanges and valves. The line then goes into operation.',y:'The moment the asset goes live. It needs strict permits and coordination.',p:'Operations staff take part. Only trained, authorised people operate valves.'},
+ {t:'Handover',f:'Certificates and dossiers',w:'Completion certificates (MC, RFSU, PAC) are signed, and the final dossier is handed over: as-builts, weld maps, NDT and test records, material certificates, and operating manuals.',y:'Handover moves responsibility and risk to the owner.',p:'Dossier gaps delay final acceptance and payment. Build it continuously, not at the end.'}
+]};
+
+/* ---------- contractor mistakes (m) and skepticism points (s: [what they say, what to check]) ---------- */
+const TIPS = {
+manufacturing:[
+ {m:[`Ordering sweet-service steel when the gas may turn sour later.`,`Accepting the mill's chemistry without checking carbon equivalent against the project spec.`],
+  s:[[`The mill is approved.`,`Approved for which grade, size and service? Ask for the mill qualification test (MPQT) record for this order.`],[`The steel meets spec.`,`Ask for the actual heat analysis next to the spec limits, not a summary letter.`]]},
+ {m:[`Losing heat-number traceability when slabs or plates are moved, re-cut or mixed.`],
+  s:[[`Traceability is maintained.`,`Pick three random pipe numbers and trace each one yourself to its heat and certificate.`]]},
+ {m:[`Booking the mill slot late, then promising delivery dates the mill never confirmed.`,`Ignoring plate or coil supply as a separate risk from pipe making.`],
+  s:[[`The mill slot is booked.`,`Ask for the mill's written confirmation with rolling dates.`],[`Plate is in production.`,`Ask for tonnage rolled to date against the plan.`]]},
+ {m:[`Sampling plates for UT instead of scanning 100%.`,`Using UT equipment with lapsed calibration.`],
+  s:[[`100% UT is done.`,`Ask for the UT records and calibration certificate.`],[`Rejections are normal.`,`Ask for the actual number and percentage.`]]},
+ {m:[`Running worn milling tools, which gives poor seam edges.`],
+  s:[[`Edge prep is fine.`,`Look at the seam weld repair trend. Edge problems show up there.`]]},
+ {m:[`Pipe ends out of round, which slows field line-up.`],
+  s:[[`All dimensions are in tolerance.`,`Ask for the measurement log, then spot-check a few pipes at the yard.`]]},
+ {m:[`Pushing welding speed outside the qualified procedure to raise output.`],
+  s:[[`Seam repair rate is low.`,`Ask for the weekly percentage and trend, not a word like low.`],[`The welding procedure is qualified.`,`Check it covers this order's grade and wall thickness.`]]},
+ {m:[`Skipping or under-doing expansion to save time.`],
+  s:[[`Expansion is per procedure.`,`Ask for the recorded expansion values for a sample of pipes.`]]},
+ {m:[`Holding for less than the required time, or testing below the API 5L table pressure.`,`Using uncalibrated pressure gauges.`],
+  s:[[`All pipes were hydrotested.`,`Ask for per-pipe records (pressure and time) matched to pipe numbers.`]]},
+ {m:[`Missing lamination checks at pipe ends, where field welds will go.`],
+  s:[[`Third party witnessed it.`,`Whose third party: yours, or one the vendor hired?`],[`NDT is 100% passed.`,`A perfect pass rate is unusual. Ask for repair and reject numbers.`]]},
+ {m:[`Damaging bevels through poor end caps or handling.`],
+  s:[[`We have enough pipe for X km.`,`Joints are not all exactly 12 m. Ask for the total measured length, minus expected cut-outs.`]]},
+ {m:[`Shipping pipe before certificates are issued.`,`Charpy or DWTT results missing from certificates.`],
+  s:[[`Certificates will follow.`,`No certificate, no release. Hold the release note until you have them.`],[`The retest passed.`,`Ask why the first test failed and which pipes are affected.`]]},
+ {m:[`Poor surface preparation (blast profile, dust, salt) before coating.`,`Coating thinner than spec, or wrong cutback length.`],
+  s:[[`Holiday test passed.`,`Ask the test voltage and when the detector was last calibrated.`],[`The coating plant is on schedule.`,`Ask how many pipes are coated versus still bare.`]]},
+ {m:[`Poor stacking, missing end caps and coating damage in transport.`],
+  s:[[`Pipe is delivered.`,`Delivered to the port, or received and inspected at the project yard?`],[`Only minor damage.`,`Ask for the damage log with counts and repair status.`]]}
+],
+construction:[
+ {m:[`Mobilising crews before all permits and landowner agreements are signed.`],
+  s:[[`Land access is ready.`,`Ask for a list by KP showing signed or pending status.`],[`The route is surveyed.`,`Check the survey uses the latest alignment sheet revision.`]]},
+ {m:[`Clearing far ahead of other crews, so the strip erodes and needs redoing.`,`Not stripping and storing topsoil where reinstatement needs it.`],
+  s:[[`X km is cleared.`,`Cleared and graded to a usable standard, or just rough cut?`]]},
+ {m:[`Placing the wrong wall thickness at crossings or class location changes.`,`Dragging pipe and damaging coating.`],
+  s:[[`X km of pipe is strung.`,`Check pipe numbers against the pipe book at a few crossings.`]]},
+ {m:[`Bends with wrinkles or ovality, or bending tighter than the procedure allows.`],
+  s:[[`All bends are done.`,`Ask for the bend list status and ovality checks on completed bends.`]]},
+ {m:[`Using welders not qualified on this procedure.`,`Skipping preheat or interpass temperature control.`],
+  s:[[`We made X welds today.`,`Fully complete welds (all passes), or just roots and hot passes?`],[`The repair rate is low.`,`Calculate it yourself from NDT reports.`],[`All welders are qualified.`,`Compare welder IDs in the weld log with the qualified welder list.`]]},
+ {m:[`NDT falling days behind welding.`,`Poor film quality hiding defects.`],
+  s:[[`Zero repairs this week.`,`Zero for long periods is a red flag. Have an independent reviewer check a sample of films or AUT data.`],[`NDT is up to date.`,`Ask how many welds are waiting for NDT, as a number.`]]},
+ {m:[`Poor blasting before sleeves, or sleeves not overlapping the factory coating enough.`],
+  s:[[`All joints are holiday tested.`,`Witness random joints and ask for peel test records.`]]},
+ {m:[`Trench shallower than the drawings require.`,`Leaving trench open too long, which is a safety and collapse risk.`],
+  s:[[`Trench is at depth.`,`Ask for depth records by KP and spot-check before lowering.`]]},
+ {m:[`Lowering onto rock without padding.`,`Too few sidebooms for the string length, overstressing the pipe.`],
+  s:[[`X km is lowered in.`,`Was the coating holiday-tested just before lowering, and was padding checked?`]]},
+ {m:[`Rocks in backfill touching the pipe.`,`Closing the trench before the as-built survey.`],
+  s:[[`Backfill is complete.`,`Were as-built coordinates and top-of-pipe levels recorded before closing?`]]},
+ {m:[`Applying for crossing permits too late.`,`Underestimating HDD ground risk.`],
+  s:[[`The HDD is on track.`,`Ask for metres drilled versus plan and reaming passes completed.`],[`The permit is expected next week.`,`Ask for written status from the authority.`]]},
+ {m:[`Making golden welds without client approval.`,`Forcing poor fit-up at tie-ins.`],
+  s:[[`Tie-ins are done.`,`Ask for a tie-in list with NDT results and golden weld approvals.`]]},
+ {m:[`Gaps between civil, mechanical, electrical and instrument trades.`],
+  s:[[`The station is 90% complete.`,`90% of what? Ask for installed quantities versus totals, and loop-check status.`]]},
+ {m:[`Leaving reinstatement and as-built drawings until the end.`,`Missing marker posts.`],
+  s:[[`The line is complete.`,`Are reinstatement, landowner sign-offs and as-builts also complete?`]]}
+],
+commissioning:[
+ {m:[`Declaring mechanical completion with open A-punch items.`],
+  s:[[`We are ready for testing.`,`Walk the line yourself and check the A-punch list is closed and signed.`]]},
+ {m:[`Using the wrong gauge plate size.`],
+  s:[[`The gauge plate passed.`,`Ask for before-and-after photos of the plate with a ruler.`]]},
+ {m:[`Using unfiltered or untreated water.`,`Leaving air pockets in the line.`],
+  s:[[`Water quality is fine.`,`Ask for the lab results.`]]},
+ {m:[`Starting the hold before the water temperature settles.`,`Using gauges or recorders without valid calibration.`],
+  s:[[`The test passed.`,`Review the pressure and temperature chart yourself.`],[`The pressure drop was due to temperature.`,`Ask for the calculation showing it.`]]},
+ {m:[`Leaving water in low points.`],
+  s:[[`The line is dewatered.`,`Compare water volume removed with volume filled, and check pig run records.`]]},
+ {m:[`Measuring dew point too early, before a soak period.`],
+  s:[[`Dew point is achieved.`,`Was it measured after the soak period, with a calibrated meter?`]]},
+ {m:[`Skipping the baseline run when it is in scope.`],
+  s:[[`The pig run was successful.`,`Ask for the written report, not a phone call.`]]},
+ {m:[`Stopping the purge too early.`],
+  s:[[`Oxygen is below the limit.`,`Was it measured at the far end, with a calibrated analyser?`]]},
+ {m:[`Energising CP without checking insulating joints.`],
+  s:[[`CP potentials are fine.`,`Ask for the full survey readings at each test post.`]]},
+ {m:[`Rushing gas-in under schedule pressure.`],
+  s:[[`We are ready for gas-in.`,`Are all permits, procedures and operations sign-offs complete?`]]},
+ {m:[`Handing over an incomplete dossier.`],
+  s:[[`The dossier is complete.`,`Pick 10 random welds and trace each one through the dossier.`]]}
+]};
+
+const PAGE_TIPS = {
+'big-picture':{m:[`Underestimating permits and land access.`,`Treating the schedule as construction only.`],
+  s:[[`Overall progress is X%.`,`Ask how the percentage is weighted.`],[`We are on schedule.`,`Ask for the critical path and remaining float.`]]},
+'pipe-basics':{m:[`Putting the wrong wall thickness in a class location.`],
+  s:[[`This material is equivalent.`,`Any substitution needs your written approval.`]]},
+'design':{m:[`Building from drawings not yet issued for construction (IFC).`,`Making design changes late.`],
+  s:[[`Design is 95% complete.`,`Ask for the list of drawings at IFC status.`],[`It is a minor change.`,`Ask for its cost and schedule impact in writing.`]]},
+'procurement':{m:[`Placing orders late.`,`Not expediting sub-vendors.`],
+  s:[[`The PO is placed.`,`Is it for the full quantity, with confirmed delivery dates?`],[`Material is on the way.`,`Ask for the shipping documents.`]]},
+'quality-safety':{m:[`Hiding NCRs.`,`Filling ITPs on paper after the work is done.`],
+  s:[[`There are no NCRs.`,`That is a red flag on a real project.`],[`Zero safety incidents.`,`Ask how many near misses were reported. Very few usually means poor reporting.`]]},
+'pm-view':{m:[`Making optimistic recovery plans.`],
+  s:[[`We will recover next month.`,`Ask for the resources plan and the trend of earned versus planned progress.`]]}
+};
+
+function tips(t){
+  if(!t) return '';
+  return `<div class="tips">
+   <div class="tip-btns">
+    <button type="button" class="tip-btn mis" data-tip="mis" aria-expanded="false"><i>!</i>Common contractor mistakes</button>
+    <button type="button" class="tip-btn sk" data-tip="sk" aria-expanded="false"><i>?</i>Skepticism points</button>
+   </div>
+   <div class="tip-panel mis" hidden><span class="lab">Common contractor mistakes</span><ul>${t.m.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+   <div class="tip-panel sk" hidden><span class="lab">Don't take it at face value</span>${t.s.map(([c,k])=>`<div class="sk-item"><span class="claim">${c}</span><span class="check">${k}</span></div>`).join('')}</div>
+  </div>`;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-tip]'); if(!b) return;
+  const wrap=b.closest('.tips');
+  const opening=b.getAttribute('aria-expanded')!=='true';
+  wrap.querySelectorAll('[data-tip]').forEach(x=>{
+    const on=opening && x===b;
+    x.setAttribute('aria-expanded',on);
+    wrap.querySelector('.tip-panel.'+x.dataset.tip).hidden=!on;
+  });
+});
+
+/* ---------- module content ---------- */
+const MOD = {};
+
+MOD['big-picture'] = () => `
+<div class="eyebrow">Module 01</div>
+<h1>The big picture</h1>
+<p class="lead">A trunkline is the main high-pressure "highway" that carries gas over a long distance between two major points, such as a processing plant and a large consumer or a transmission network.</p>
+<div class="block"><h2>Where your line sits</h2>
+<div class="chain">
+ ${node('well','Wells and flowlines','Small pipes bring raw gas from each well.')}<div class="arrow"></div>
+ ${node('plant','Gathering and processing','Gas is collected and treated: water, sand and sometimes H₂S are removed.')}<div class="arrow"></div>
+ ${node('pipe','Trunkline: your 30 km','Large diameter, high pressure, buried steel pipe.',true)}<div class="arrow"></div>
+ ${node('station','Receiving station','Metering, pressure control, delivery into the next system.')}<div class="arrow"></div>
+ ${node('user','Customers','Power plants, industry, city distribution networks.')}
+</div></div>
+<div class="block"><h2>Project lifecycle</h2>
+<p class="muted">Phases overlap. Bar lengths are illustrative, not a schedule.</p>
+<div class="gantt" role="img" aria-label="Illustrative pipeline project phases">
+ ${g('Concept / FEED',0,18)}${g('Detailed design',12,30)}${g('Procurement',16,38)}${g('Pipe manufacture',26,30)}${g('Construction',42,44,true)}${g('Testing & comm.',80,14)}${g('Handover',92,8)}
+ <div class="g-axis"><div></div><div><span>Start</span><span>Mid</span><span>Gas-in</span></div></div>
+</div></div>
+<div class="note"><strong>Key idea</strong>Pipe has to be ordered long before construction can start. Most early schedule risk sits in design, procurement and permits, not in the field.</div>
+${quiz([['What separates a trunkline from a flowline?','A flowline carries raw gas from a single well. A trunkline carries large volumes of treated gas over long distance at high pressure.'],['Why does construction start so late in the lifecycle?','Because line pipe has to be designed, ordered, rolled, coated and shipped first. That usually takes many months.']])}`;
+
+MOD['pipe-basics'] = () => `
+<div class="eyebrow">Module 02</div>
+<h1>Pipe basics</h1>
+<p class="lead">A handful of words will come up in every meeting. Learn these first.</p>
+<div class="xsec">
+<svg viewBox="0 0 420 230" role="img" aria-label="Pipe cross-section showing outside diameter, wall thickness and coating">
+ <circle cx="130" cy="115" r="98" fill="#16252e"/>
+ <circle cx="130" cy="115" r="92" fill="#8fa3ab"/>
+ <circle cx="130" cy="115" r="78" fill="#f5f7f6"/>
+ <line x1="32" y1="115" x2="228" y2="115" stroke="#f2b705" stroke-width="2" stroke-dasharray="5 4"/>
+ <line x1="252" y1="115" x2="228" y2="115" stroke="#5a6b72" stroke-width="1"/>
+ <text x="258" y="119" font-family="JetBrains Mono,monospace" font-size="12" fill="#16252e">OD (outside diameter)</text>
+ <line x1="215" y1="160" x2="262" y2="175" stroke="#5a6b72"/>
+ <text x="266" y="179" font-family="JetBrains Mono,monospace" font-size="12" fill="#16252e">WT (steel wall)</text>
+ <line x1="203" y1="60" x2="262" y2="48" stroke="#5a6b72"/>
+ <text x="266" y="52" font-family="JetBrains Mono,monospace" font-size="12" fill="#16252e">Coating (3LPE)</text>
+ <text x="130" y="112" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" fill="#1f4e5f">ID / bore</text>
+ <text x="130" y="130" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#5a6b72">gas flows here</text>
+</svg></div>
+<div class="terms">
+ ${term('OD','Outside diameter, given in inches. Trunklines are often 16" to 48".')}
+ ${term('WT','Wall thickness in mm. Thicker pipe holds more pressure and is used at crossings and near people.')}
+ ${term('Design pressure','The maximum pressure the line is designed for, in bar or psi.')}
+ ${term('MAOP','Maximum Allowable Operating Pressure. The legal upper limit in service.')}
+ ${term('SMYS','Specified Minimum Yield Strength. The strength figure in the grade name.')}
+ ${term('Joint','One length of pipe, typically about 12 m.')}
+ ${term('Spool','A short fabricated section with fittings, made in a shop.')}
+ ${term('Class location','Area category by population density. More people means thicker wall and lower stress.')}
+</div>
+<div class="block"><h2>Line pipe grades (API 5L)</h2>
+<p class="muted">The number after X is the minimum yield strength in thousands of psi.</p>
+<div class="tbl"><table>
+<thead><tr><th>API grade</th><th>ISO 3183 name</th><th>Min. yield (SMYS)</th><th>Where you see it</th></tr></thead>
+<tbody>
+<tr><td class="num">X52</td><td class="num">L360</td><td class="num">52,000 psi · 359 MPa</td><td>Smaller lines, sour service, stations</td></tr>
+<tr><td class="num">X60</td><td class="num">L415</td><td class="num">60,000 psi · 414 MPa</td><td>Common for medium trunklines</td></tr>
+<tr><td class="num">X65</td><td class="num">L450</td><td class="num">65,000 psi · 448 MPa</td><td>Very common for gas trunklines</td></tr>
+<tr><td class="num">X70</td><td class="num">L485</td><td class="num">70,000 psi · 483 MPa</td><td>Large diameter, long transmission lines</td></tr>
+</tbody></table></div>
+<div class="block"><h3>PSL1 or PSL2?</h3>
+<ul class="clean">
+ <li>PSL2 sets a minimum <i>and</i> a maximum yield strength, and caps the yield-to-tensile ratio (0.93 for X42 and up).</li>
+ <li>PSL2 has a carbon equivalent limit and lower sulfur and phosphorus.</li>
+ <li>PSL2 makes Charpy impact tests mandatory and requires full seam NDT.</li>
+ <li>PSL2 requires heat traceability and EN 10204 3.1 or 3.2 certificates.</li>
+ <li>The sour service annex (Annex H) is only available under PSL2.</li>
+</ul>
+<p class="muted">Gas transmission lines almost always use PSL2. It costs roughly 5–15% more than PSL1 for the same grade and size.</p></div>
+</div>
+<div class="block"><h2>Sweet or sour gas</h2>
+<p><b>Sweet</b> gas has little or no hydrogen sulfide (H₂S). <b>Sour</b> gas contains H₂S, which can make steel crack (HIC and SSC). Sour service needs special steel chemistry, hardness limits, extra tests and stricter welding procedures. Find out early which one your line is.</p></div>
+<div class="block"><h2>Main components</h2>
+<div class="terms">
+ ${term('Line pipe','The straight joints making up most of the line.')}
+ ${term('Bends','Cold field bends, or factory induction bends for sharp turns.')}
+ ${term('Valves','Ball valves at block valve stations isolate sections of the line.')}
+ ${term('Flanges and tees','Bolted joints and branch connections, mainly at stations.')}
+ ${term('Scraper traps','Pig launcher and receiver at each end, for cleaning and inspection.')}
+ ${term('Insulating joint','Electrically separates the buried line from station piping, for CP.')}
+</div></div>
+${quiz([['A pipe is "X65 PSL2". What does that tell you?','API 5L grade with minimum yield strength of 65,000 psi, made to the stricter PSL2 level.'],['Why is wall thickness higher at road crossings and near towns?','To lower stress and give more protection where a failure would affect more people.']])}`;
+
+MOD['manufacturing'] = () => `
+<div class="eyebrow">Module 03 · Step by step</div>
+<h1>How line pipe is made</h1>
+<p class="lead">From liquid steel to a coated, certified pipe joint at your yard. Shown for welded pipe (LSAW and ERW/HFW), the usual choice for gas trunklines.</p>
+<div class="tbl"><table>
+<thead><tr><th>Type</th><th>How it's made</th><th>Typical use</th></tr></thead>
+<tbody>
+<tr><td class="num">Seamless</td><td>Solid billet heated, pierced into a hollow shell, then rolled to size. No weld seam</td><td>Up to about 24"; stations, high pressure, thick wall</td></tr>
+<tr><td class="num">ERW / HFW</td><td>Strip formed into a tube, edges fused by high-frequency current, seam heat-treated and inspected inline</td><td>About 2"–24", wall up to about 25 mm. Lowest cost</td></tr>
+<tr><td class="num">LSAW</td><td>Plate pressed round (UOE or JCOE), seam welded inside and outside by submerged arc</td><td>About 16"–60", wall up to about 40–50 mm</td></tr>
+</tbody></table></div>
+${stepperShell('manufacturing')}
+${quiz([['What links a pipe joint in the field back to its steel?','The heat number and pipe number, stencilled on the pipe and recorded on the Mill Test Certificate.'],['Why are the pipe ends left without coating?','So they can be welded in the field. The bare "cutback" is coated later with a field joint sleeve.']])}`;
+
+MOD['design'] = () => `
+<div class="eyebrow">Module 04</div>
+<h1>Engineering and design</h1>
+<p class="lead">Design turns "connect A to B" into drawings, numbers and a material list that construction can build from.</p>
+<div class="block"><h2>Two design stages</h2>
+<div class="terms">
+ ${term('FEED','Front End Engineering Design. Fixes route, diameter, pressure, wall thickness and the cost estimate. Often done before the EPC contract.')}
+ ${term('Detailed design','Produces every drawing, calculation and list needed to buy material and build.')}
+</div></div>
+<div class="block"><h2>What design decides</h2>
+<ul class="clean">
+ <li><b>Route.</b> Shortest is not always best. Avoid towns, unstable ground and too many crossings. Survey data (topography, soil, geotechnical) feeds this.</li>
+ <li><b>Hydraulics.</b> Diameter and pressure needed to move the required gas volume.</li>
+ <li><b>Wall thickness.</b> Calculated from pressure, grade, diameter and class location.</li>
+ <li><b>Crossings.</b> A design for each road, wadi, rail and utility crossing.</li>
+ <li><b>Corrosion protection.</b> Coating type and cathodic protection system.</li>
+ <li><b>Valve spacing.</b> Block valves to isolate sections in an emergency.</li>
+</ul></div>
+<div class="block"><h2>Key codes and standards</h2>
+<div class="tbl"><table>
+<thead><tr><th>Code</th><th>Covers</th></tr></thead><tbody>
+<tr><td class="num">ASME B31.8</td><td>Gas transmission pipeline design, construction and testing</td></tr>
+<tr><td class="num">API 5L / ISO 3183</td><td>Line pipe manufacture</td></tr>
+<tr><td class="num">API 1104</td><td>Pipeline welding and weld inspection</td></tr>
+<tr><td class="num">ISO 21809-1</td><td>Factory pipe coating (3LPE, 3LPP)</td></tr>
+<tr><td class="num">ISO 21809-3</td><td>Field joint coatings (e.g. heat-shrink sleeves)</td></tr>
+<tr><td class="num">49 CFR 192</td><td>US federal gas pipeline rules. Often quoted as a reference even outside the US</td></tr>
+<tr><td class="num">ISO 15589-1</td><td>Cathodic protection of buried pipelines</td></tr>
+<tr><td class="num">Client standards</td><td>Owner's own specs, which often go beyond the codes</td></tr>
+</tbody></table></div></div>
+<div class="block"><h2>Main deliverables you will see</h2>
+<div class="terms">
+ ${term('Alignment sheets','Strip maps of the route with profile, crossings, wall thickness and KPs. The construction bible.')}
+ ${term('P&IDs','Piping and instrumentation diagrams for stations: valves, instruments, flow.')}
+ ${term('MTO','Material take-off. The full quantity list for procurement.')}
+ ${term('Crossing drawings','Specific design for each crossing.')}
+ ${term('Specifications','Rules for pipe, coating, welding, testing.')}
+ ${term('Stress analysis','Checks pipe loads at bends, crossings and stations.')}
+</div></div>
+<div class="note"><strong>PM tip</strong>Late design changes are expensive once pipe is ordered. Push for a frozen route and wall thickness schedule before the pipe order goes out.</div>
+${quiz([['What is a KP?','Kilometre Point. The distance along the route from the start, e.g. KP 12+350 is 12.35 km in.'],['Which drawing does the field crew use most?','The alignment sheets.']])}`;
+
+MOD['procurement'] = () => `
+<div class="eyebrow">Module 05</div>
+<h1>Procurement</h1>
+<p class="lead">Buying the right material, getting it inspected, and getting it to site on time.</p>
+<div class="block"><h2>Long-lead items</h2>
+<p>These have the longest delivery times and are ordered first. Delivery times vary by market and are typically many months.</p>
+<div class="terms">
+ ${term('Line pipe','The biggest item by cost and weight. Mill slot plus coating plant.')}
+ ${term('Large ball valves','Mainline block valves, often a long wait.')}
+ ${term('Induction bends','Factory bends made after the route is fixed.')}
+ ${term('Scraper traps','Custom pressure vessels.')}
+ ${term('Insulating joints','Specialist items.')}
+ ${term('Heat-shrink sleeves','One per field weld, plus spares.')}
+</div></div>
+<div class="block"><h2>The procurement sequence</h2>
+<ol class="clean">
+ <li>Material requisition from the MTO</li>
+ <li>Request for quotation to approved vendors</li>
+ <li>Technical and commercial evaluation</li>
+ <li>Purchase order</li>
+ <li>Vendor documents and procedures approved (e.g. mill procedure, ITP)</li>
+ <li>Manufacture with inspection and expediting</li>
+ <li>Release note after final inspection</li>
+ <li>Shipping, customs, delivery to pipe yard</li>
+ <li>Receiving inspection and storage</li>
+</ol></div>
+<div class="block"><h2>Pipe yard basics</h2>
+<ul class="clean">
+ <li>Pipe stored on padded berms, stack heights limited to protect coating.</li>
+ <li>End caps kept on to keep out sand and water.</li>
+ <li>Every joint logged by pipe number into a tracking system.</li>
+ <li>Damaged coating or bevels tagged and repaired before issue.</li>
+</ul></div>
+<div class="note"><strong>PM tip</strong>Order a little extra pipe (contingency) for cut-outs, damage and test failures. Running short of pipe at the end of a project is very costly.</div>
+${quiz([['What is expediting?','Actively following up with vendors to keep manufacture and delivery on schedule.'],['Why order extra pipe?','For cut-outs from weld repairs, transport damage and crossings that turn out longer than planned.']])}`;
+
+MOD['construction'] = () => `
+<div class="eyebrow">Module 06 · Step by step</div>
+<h1>Building the line</h1>
+<p class="lead">Pipeline construction works like a moving factory called a "spread". Each crew does one job and moves along the route, with the next crew following behind.</p>
+<div class="note"><strong>Think of it as a train</strong>Clearing is kilometres ahead, welding is in the middle, backfill is behind. All crews work at the same time on different parts of the route.</div>
+${stepperShell('construction')}
+${quiz([['Why must NDT keep pace with welding?','If inspection falls behind, defects are found after the line has been lowered or moved on, which makes repairs much harder.'],['What is a golden weld?','A final tie-in weld that cannot be hydrotested. It gets extra inspection and client approval instead.']])}`;
+
+MOD['commissioning'] = () => `
+<div class="eyebrow">Module 07 · Step by step</div>
+<h1>Testing and commissioning</h1>
+<p class="lead">Proving the line is strong, clean, dry and safe, then bringing gas in and handing it over.</p>
+${stepperShell('commissioning')}
+${quiz([['Why is pressure testing done with water, not gas?','Water barely compresses, so if the pipe fails, very little stored energy is released.'],['Why use nitrogen before gas-in?','To remove oxygen so gas never mixes with air in an explosive ratio.']])}`;
+
+MOD['quality-safety'] = () => `
+<div class="eyebrow">Module 08</div>
+<h1>Quality and safety</h1>
+<div class="block"><h2>Quality control (QA/QC)</h2>
+<div class="terms">
+ ${term('ITP','Inspection and Test Plan. Lists every check, who does it, and hold or witness points.')}
+ ${term('WPS','Welding Procedure Specification. The recipe each welder follows.')}
+ ${term('PQR','Procedure Qualification Record. Test proof that the WPS produces good welds.')}
+ ${term('Welder qualification','Each welder passes a test before working on the line.')}
+ ${term('NCR','Non-Conformance Report. Formal record when something does not meet spec.')}
+ ${term('Weld map','Record linking every weld to its welders, pipe numbers and NDT result.')}
+</div>
+<p><b>Hold point</b> means work stops until the inspector signs off. <b>Witness point</b> means the inspector is invited but work can go on if they do not come.</p>
+</div>
+<div class="block"><h2>Main hazards on a pipeline job</h2>
+<div class="tbl"><table>
+<thead><tr><th>Hazard</th><th>Typical control</th></tr></thead><tbody>
+<tr><td>Excavation and open trench</td><td>Shoring or sloping, barricades, no entry without permit</td></tr>
+<tr><td>Heavy lifting (sidebooms, cranes)</td><td>Lift plans, exclusion zones, certified operators</td></tr>
+<tr><td>Radiography (X-ray NDT)</td><td>Radiation barriers, licensed staff, controlled times</td></tr>
+<tr><td>Pressure testing</td><td>Exclusion zone around test section, approved test procedure</td></tr>
+<tr><td>Live gas near existing lines</td><td>Locate services, hot work permits, gas testing</td></tr>
+<tr><td>Driving on remote routes</td><td>Journey management, speed limits, fatigue control</td></tr>
+<tr><td>Heat and dust</td><td>Work-rest cycles, water, shade</td></tr>
+</tbody></table></div></div>
+<div class="note"><strong>Permit to Work</strong>Risky tasks (hot work, confined space, excavation, lifting, pressure testing) need a written permit before they start. It is the main tool for controlling field risk.</div>
+${quiz([['What is the difference between a hold point and a witness point?','At a hold point work must stop until sign-off. At a witness point the inspector may attend, but work can proceed.'],['What does a weld map let you do?','Trace any weld to who made it, which pipes it joins, and its inspection result.']])}`;
+
+MOD['pm-view'] = () => `
+<div class="eyebrow">Module 09</div>
+<h1>The project manager's view</h1>
+<div class="block"><h2>Who is who</h2>
+<div class="org">
+ <div class="lvl"><div class="box"><b>Owner / Client</b><span>Pays for and will operate the line</span></div></div>
+ <div class="lvl"><div class="box"><b>PMC</b><span>Supervises on the owner's behalf (if used)</span></div></div>
+ <div class="lvl"><div class="box"><b>EPC contractor</b><span>Engineers, procures and constructs</span></div></div>
+ <div class="lvl"><div class="box"><b>Subcontractors</b><span>HDD, NDT, coating, CP, survey</span></div><div class="box"><b>Vendors</b><span>Pipe mill, valves, sleeves</span></div></div>
+</div>
+<p class="muted">Your role decides your focus. On the owner side you check and accept. On the contractor side you deliver.</p>
+</div>
+<div class="block"><h2>Numbers to watch every week</h2>
+<div class="tbl"><table>
+<thead><tr><th>Measure</th><th>Why it matters</th></tr></thead><tbody>
+<tr><td>Metres welded per day</td><td>Main production rate; drives the end date. At 500 m/day, 30 km of mainline welding is about 60 working days</td></tr>
+<tr><td>Weld repair rate (%)</td><td>Quality signal; low single digits is usually the goal</td></tr>
+<tr><td>NDT backlog (welds)</td><td>Should stay near zero</td></tr>
+<tr><td>Km cleared, strung, lowered, backfilled</td><td>Shows if crews are spaced correctly</td></tr>
+<tr><td>Pipe received vs. installed</td><td>Material running out or piling up</td></tr>
+<tr><td>Open NCRs and punch items</td><td>Future delays building up</td></tr>
+<tr><td>Safety: LTIs, near misses</td><td>Leading signs of a site at risk</td></tr>
+<tr><td>Cost vs. budget, earned value</td><td>Overall health</td></tr>
+</tbody></table></div></div>
+<div class="block"><h2>A rough scale for 30 km</h2>
+<div class="terms">
+ ${term('≈ 2,500','Pipe joints at about 12 m each')}
+ ${term('≈ 2,500+','Field welds, plus tie-ins')}
+ ${term('Dozens','Crossings, depending on the route')}
+ ${term('Several','Block valve stations, depending on design')}
+</div></div>
+<div class="block"><h2>Common pitfalls</h2>
+<ul class="clean">
+ <li>Starting construction before land access and permits are secured.</li>
+ <li>Pipe arriving late or in the wrong wall thickness order.</li>
+ <li>NDT falling behind welding.</li>
+ <li>Crossings treated as minor and started too late.</li>
+ <li>Hydrotest water source and disposal not planned.</li>
+ <li>Quality dossier left until the end.</li>
+ <li>Weak interfaces between the line and the stations at each end.</li>
+</ul></div>
+<div class="note"><strong>Your first 30 days</strong>Read the scope of work and the alignment sheets. Walk the route. Learn the schedule's critical path. Meet the QA/QC and HSE leads. Ask where the pipe is right now.</div>`;
+
+const GLOSS = [
+['3LPE','Three-layer polyethylene coating: FBE, adhesive, PE.'],['AUT','Automated ultrasonic testing of field welds.'],['Alignment sheet','Route map with profile and design data per section.'],['As-built','Drawing of what was actually built.'],['CP','Cathodic protection. Electrical system that stops corrosion.'],['Charpy','Impact test for steel toughness.'],['Cutback','Uncoated pipe end left for welding.'],['DWTT','Drop weight tear test, checks crack arrest.'],['EPC','Engineering, Procurement and Construction contract.'],['ERW / HFW','Electric resistance / high frequency welded pipe.'],['FBE','Fusion bonded epoxy coating.'],['FEED','Front End Engineering Design.'],['Firing line','Welding crews adding fill and cap passes.'],['Golden weld','Tie-in weld not hydrotested, fully inspected instead.'],['HAZ','Heat affected zone beside a weld.'],['HDD','Horizontal directional drilling under obstacles.'],['Heat number','ID of a steel batch from the mill.'],['HIC / SSC','Cracking types caused by H₂S in sour gas.'],['Holiday','Pinhole or gap in coating.'],['Hydrotest','Pressure test using water.'],['ITP','Inspection and Test Plan.'],['KP','Kilometre point along the route.'],['LSAW','Longitudinal submerged arc welded pipe.'],['MAOP','Maximum allowable operating pressure.'],['MC','Mechanical completion.'],['MTC','Mill test certificate.'],['MTO','Material take-off.'],['NCR','Non-conformance report.'],['NDT','Non-destructive testing.'],['P&ID','Piping and instrumentation diagram.'],['PAC','Provisional acceptance certificate.'],['Pig','Device pushed through the pipe to clean or inspect.'],['PMC','Project management consultant.'],['PQR','Procedure qualification record.'],['PSL2','Stricter API 5L product level.'],['PTW','Permit to work.'],['Punch list','List of unfinished or defective items.'],['RFSU','Ready for start-up.'],['ROW','Right of way, the working strip.'],['RT','Radiographic testing (X-ray).'],['SMYS','Specified minimum yield strength.'],['Sideboom','Tracked machine that lifts and lowers pipe.'],['Spread','The full set of construction crews.'],['Stringing','Laying pipe joints along the ROW.'],['Tie-in','Weld joining two completed sections.'],['UT','Ultrasonic testing.'],['WPS','Welding procedure specification.'],['WT','Wall thickness.']
+];
+MOD['glossary'] = () => `
+<div class="eyebrow">Module 10</div>
+<h1>Glossary</h1>
+<label for="gq" class="muted">Search ${GLOSS.length} terms</label>
+<input id="gq" class="search" type="search" placeholder="Type a term, e.g. pig" autocomplete="off">
+<div class="gl" id="gl"></div>`;
+
+/* ---------- helpers ---------- */
+function node(ic,t,d,you){return `<div class="node${you?' you':''}"><div class="ic">${ICON[ic]}</div><div><h3>${t}</h3><p>${d}</p></div></div>`}
+function g(l,s,w,hot){return `<div class="g-row"><div>${l}</div><div class="g-track"><div class="g-bar${hot?' hot':''}" style="left:${s}%;width:${w}%"></div></div></div>`}
+function term(t,d){return `<div class="term"><span class="t">${t}</span><span class="d">${d}</span></div>`}
+function quiz(qs){return `<div class="block"><h2>Check yourself</h2><div class="quiz">${qs.map(q=>`<details><summary>${q[0]}</summary><p>${q[1]}</p></details>`).join('')}</div></div>`}
+function stepperShell(k){return `<div class="stepper" id="stp" data-k="${k}"></div>`}
+
+const pos = {manufacturing:0,construction:0,commissioning:0};
+try{const s=JSON.parse(localStorage.getItem('t101pos')||'{}');Object.assign(pos,s)}catch(e){}
+function savePos(){try{localStorage.setItem('t101pos',JSON.stringify(pos))}catch(e){}}
+
+function renderStepper(anim){
+  const el=document.getElementById('stp'); if(!el) return;
+  const k=el.dataset.k, steps=SEQ[k], i=Math.min(pos[k],steps.length-1), s=steps[i];
+  el.innerHTML=`
+  <div class="st-head">
+    <div class="st-count"><span>Step ${i+1} of ${steps.length}</span><span>${Math.round((i+1)/steps.length*100)}%</span></div>
+    <div class="st-track">${steps.map((x,j)=>`<button aria-label="Go to step ${j+1}: ${x.t}" class="${j<i?'done':j===i?'now':''}" data-go="${j}"></button>`).join('')}</div>
+  </div>
+  <div class="st-body${anim?' anim':''}" aria-live="polite">
+    <div class="st-title"><div class="st-num">${String(i+1).padStart(2,'0')}</div><h3>${s.t}</h3></div>
+    <div class="st-fact">${s.f}</div>
+    <div class="st-sec"><span class="lab">What happens</span><p>${s.w}</p></div>
+    <div class="st-sec"><span class="lab">Why it matters</span><p>${s.y}</p></div>
+    <div class="st-sec st-watch"><span class="lab">PM watch-out</span><p>${s.p}</p></div>
+    ${tips(TIPS[k] && TIPS[k][i])}
+  </div>
+  <div class="st-nav">
+    <button class="btn" id="prev" ${i===0?'disabled':''}>Back</button>
+    <button class="btn primary" id="next">${i===steps.length-1?'Start again':'Next →'}</button>
+  </div>
+  <details class="st-list" style="padding:0 16px 14px"><summary>All ${steps.length} steps</summary><ol>${steps.map((x,j)=>`<li class="${j===i?'cur':''}"><button data-go="${j}">${x.t}</button></li>`).join('')}</ol></details>`;
+  el.querySelector('#prev').onclick=()=>go(k,i-1);
+  el.querySelector('#next').onclick=()=>go(k,i===steps.length-1?0:i+1);
+  el.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(k,+b.dataset.go));
+}
+function go(k,i){pos[k]=i;savePos();renderStepper(true);const el=document.getElementById('stp');const r=el.getBoundingClientRect();if(r.top<60)el.scrollIntoView({block:'start',behavior:'smooth'})}
+
+let touchX=null;
+document.addEventListener('touchstart',e=>{if(e.target.closest('#stp .st-body'))touchX=e.touches[0].clientX},{passive:true});
+document.addEventListener('touchend',e=>{if(touchX==null)return;const dx=e.changedTouches[0].clientX-touchX;touchX=null;const el=document.getElementById('stp');if(!el||Math.abs(dx)<60)return;const k=el.dataset.k,n=SEQ[k].length;if(dx<0&&pos[k]<n-1)go(k,pos[k]+1);if(dx>0&&pos[k]>0)go(k,pos[k]-1)},{passive:true});
+
+function renderGloss(q){
+  const box=document.getElementById('gl'); if(!box) return;
+  q=(q||'').trim().toLowerCase();
+  const rows=GLOSS.filter(([t,d])=>!q||t.toLowerCase().includes(q)||d.toLowerCase().includes(q));
+  box.innerHTML=rows.length?rows.map(([t,d])=>`<div><b>${t}</b><span>${d}</span></div>`).join(''):'<p class="gl-empty">No match. Try a shorter word.</p>';
+}
+
+function show(id){
+  const idx=Math.max(0,MODULES.findIndex(m=>m.id===id));
+  const m=MODULES[idx];
+  document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-current',c.dataset.id===m.id));
+  const prev=MODULES[idx-1], next=MODULES[idx+1];
+  document.getElementById('view').innerHTML=`<section class="mod">${MOD[m.id]().replace('</h1>','</h1>'+tips(PAGE_TIPS[m.id]))}
+   <div class="pager">${prev?`<button data-to="${prev.id}"><small>← Previous</small><span>${prev.name}</span></button>`:'<span style="flex:1"></span>'}${next?`<button class="next" data-to="${next.id}"><small>Next module →</small><span>${next.name}</span></button>`:''}</div></section>`;
+  document.querySelectorAll('[data-to]').forEach(b=>b.onclick=()=>nav(b.dataset.to));
+  renderStepper(false);
+  const gq=document.getElementById('gq'); if(gq){gq.oninput=()=>renderGloss(gq.value);renderGloss('')}
+  const chip=document.querySelector(`.chip[data-id="${m.id}"]`); if(chip) chip.scrollIntoView({inline:'center',block:'nearest'});
+}
+function nav(id){ if(location.hash.slice(1)!==id){location.hash=id}else{show(id)} window.scrollTo(0,0)}
+
+document.getElementById('rail').innerHTML=MODULES.map(m=>`<button class="chip${m.seq?' seq':''}" data-id="${m.id}"><b>${m.n}</b>${m.name}</button>`).join('');
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>nav(c.dataset.id));
+window.addEventListener('hashchange',()=>{show(location.hash.slice(1));window.scrollTo(0,0)});
+show(location.hash.slice(1)||'big-picture');
+</script>
+</body>
+</html>
