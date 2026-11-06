@@ -77,6 +77,7 @@
   .item .mid{flex:1;min-width:0}
   .item .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .item .s{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .by{display:inline-block;font-size:11px;font-weight:700;color:var(--brand-ink);background:var(--brand-soft);border-radius:6px;padding:0 6px;margin-right:2px}
   .item .amt{font-weight:700;white-space:nowrap}
   .item .del{color:var(--muted);font-size:18px;padding:4px 2px 4px 8px}
 
@@ -172,6 +173,14 @@
         <div class="field">
           <label class="f" for="desc">Description</label>
           <input class="in" id="desc" type="text" placeholder="e.g. Lunch with friends" maxlength="120" required>
+        </div>
+        <div class="field">
+          <label class="f">Cost by</label>
+          <div class="seg" id="byPick" style="margin:0">
+            <button type="button" data-by="A" class="on">A</button>
+            <button type="button" data-by="G">G</button>
+            <button type="button" data-by="Shared">Shared</button>
+          </div>
         </div>
         <div class="field">
           <label class="f">Category</label>
@@ -322,6 +331,9 @@ document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('cl
 
 /* ================= Module 1: Add ================= */
 let selectedCat = 'Food & Dining';
+let selectedBy = 'A';
+function renderBy(){ document.querySelectorAll('#byPick button').forEach(b => b.classList.toggle('on', b.dataset.by === selectedBy)); }
+$('byPick').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; selectedBy = b.dataset.by; renderBy(); });
 function renderChips(){
   $('catChips').innerHTML = CATEGORIES.map(([n,e]) =>
     `<button type="button" class="chip ${n===SAVINGS?'save':''} ${n===selectedCat?'on':''}" data-cat="${esc(n)}">${e} ${esc(n)}</button>`).join('');
@@ -350,7 +362,7 @@ $('addForm').addEventListener('submit', async (e) => {
   const cost = parseFloat($('cost').value);
   if (!(cost > 0)) { toast('Enter a cost above 0'); $('cost').focus(); return; }
   const rec = {
-    description: $('desc').value.trim(), cost, currency: 'SAR', category: selectedCat,
+    description: $('desc').value.trim(), cost, currency: 'SAR', category: selectedCat, cost_by: selectedBy,
     spent_on: $('date').value, spent_at: $('time').value, location: $('loc').value.trim() || null
   };
   if (!rec.description) { toast('Add a description'); return; }
@@ -368,7 +380,7 @@ function itemHTML(r, withDel){
   const meta = [fmtDate(r.spent_on) + ' · ' + fmtTime(r.spent_at), r.location].filter(Boolean).join(' · ');
   return `<div class="item">
     <div class="emo">${EMOJI[r.category] || '📦'}</div>
-    <div class="mid"><div class="t">${esc(r.description)}</div><div class="s">${esc(r.category)} · ${esc(meta)}</div></div>
+    <div class="mid"><div class="t">${esc(r.description)}</div><div class="s">${r.cost_by ? `<b class="by">${esc(r.cost_by)}</b> ` : ''}${esc(r.category)} · ${esc(meta)}</div></div>
     <div class="amt" style="${r.category===SAVINGS?'color:var(--save)':''}">${money(r.cost)}</div>
     ${withDel ? `<button class="del" data-del="${r.id}" aria-label="Delete">×</button>` : ''}
   </div>`;

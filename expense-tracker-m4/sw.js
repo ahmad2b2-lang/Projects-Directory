@@ -1,6 +1,6 @@
 // Expense Tracker service worker: caches the app shell so it opens instantly
 // and works like an installed app. Supabase data always goes to the network.
-const CACHE = 'expense-tracker-v1';
+const CACHE = 'expense-tracker-v2';
 const SHELL = [
   './',
   './index.html',
