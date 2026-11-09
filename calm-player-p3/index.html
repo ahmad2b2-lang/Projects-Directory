@@ -197,6 +197,8 @@ textarea.input{min-height:96px;resize:vertical;font-size:15px}
     <p class="sub">Your playlists. One tap to play.</p>
     <div id="plList"></div>
     <button class="btn primary big" id="newBtn">＋ New playlist</button>
+    <button class="btn ghost big" id="clipBtn" style="margin-top:10px">📋 Add copied link</button>
+    <p class="hint" style="text-align:center">In YouTube tap <b>Share → Copy link</b>, then tap the button above.</p>
     <div class="foot"><span class="sync"></span></div>
   </div>
 </section>
@@ -864,17 +866,35 @@ if(db.kids && db.kids.active){
    Android: once Calm Player is added to the home screen, it shows in YouTube's Share menu
    (manifest share_target) and opens as ./?title=…&text=…&url=…
    iPhone: an Apple Shortcut can open the same address with ?url=… */
+function sharedFromText(all, title=''){
+  const found = (all.match(/(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com|youtu\.be)\/[^\s"'<>]+/gi) || [])
+    .map(parseYT).filter(Boolean);
+  const seen = new Set(); const vids = found.filter(v => !seen.has(v.id) && seen.add(v.id));
+  return { vids, title };
+}
+$('#clipBtn').onclick = async () => {
+  let text = '';
+  try{ text = await navigator.clipboard.readText(); }catch(e){}
+  const sh = sharedFromText(text || '');
+  if(sh.vids.length){ handleShare(sh); return; }
+  // Clipboard not readable (or no YouTube link in it): let them paste by hand
+  openSheet(`<h2>Paste the link</h2><p>Long-press the box below and tap <b>Paste</b>.</p>
+    <textarea class="input" id="clipTxt" style="min-height:80px" placeholder="YouTube link"></textarea>
+    <div class="row"><button class="btn ghost" id="clipNo">Cancel</button><button class="btn primary" id="clipGo">Next</button></div>`);
+  $('#clipNo').onclick = closeSheet;
+  const go = () => { const s2 = sharedFromText($('#clipTxt').value); if(!s2.vids.length){ toast("That isn't a YouTube link"); return; } handleShare(s2); };
+  $('#clipGo').onclick = go;
+  $('#clipTxt').oninput = () => { if(sharedFromText($('#clipTxt').value).vids.length) go(); };
+  setTimeout(() => $('#clipTxt').focus(), 250);
+};
 function readShare(){
   const q = new URLSearchParams(location.search);
   if(!q.has('url') && !q.has('text') && !q.has('title')) return null;
   history.replaceState(history.state, '', location.pathname);
   const all = [q.get('url'), q.get('text'), q.get('title')].filter(Boolean).join(' ');
-  const found = (all.match(/(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com|youtu\.be)\/[^\s"'<>]+/gi) || [])
-    .map(parseYT).filter(Boolean);
-  const seen = new Set(); const vids = found.filter(v => !seen.has(v.id) && seen.add(v.id));
   let title = (q.get('title') || '').trim();
   if(/youtu/i.test(title) || title.length > 150) title = '';
-  return { vids, title };
+  return sharedFromText(all, title);
 }
 function handleShare(sh){
   if(!sh) return;
