@@ -129,7 +129,8 @@ textarea.input{min-height:96px;resize:vertical;font-size:16px}
 #player{position:fixed;inset:0;display:none;flex-direction:column;background:var(--bg);z-index:10;padding:calc(10px + var(--safe-t)) 12px calc(12px + var(--safe-b))}
 #player.on{display:flex}
 .p-top{display:flex;align-items:center;gap:8px;min-height:46px}
-.p-top .grow{flex:1;min-width:0;text-align:center;font-weight:800;color:var(--mute);font-size:14px}
+.p-top .grow{flex:1;min-width:0;text-align:center;font-weight:800;color:var(--mute);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-top .pill{padding:8px 10px;flex:none}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:var(--card);border:1.5px solid var(--line);font-weight:800;font-size:14px;min-height:44px}
 .pill.on{background:var(--sun-soft);border-color:var(--sun)}
 #stage{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative}
@@ -247,7 +248,8 @@ textarea.input{min-height:96px;resize:vertical;font-size:16px}
     <button class="pill kids-only" id="lockBtn" aria-label="Hold for 3 seconds to exit Kids mode"><i class="ring"></i><span id="lockTxt">🔒 Hold to exit</span></button>
     <div class="grow" id="pName"></div>
     <span class="pill kids-only" id="timeLeft"></span>
-    <button class="pill norm-only" id="autoBtn" style="display:none">Auto-next</button>
+    <button class="pill norm-only" id="shufBtn" aria-label="Shuffle or play in order"></button>
+    <button class="pill norm-only" id="autoBtn" style="display:none">Auto</button>
     <button class="pill norm-only" id="kidsBtn">🧸 Kids</button>
   </div>
 
@@ -323,7 +325,7 @@ function setSync(s){
 }
 function scheduleSync(ms=700){ clearTimeout(syncT); syncT = setTimeout(syncNow, ms); }
 const toRow = p => ({ id:p.id, name:(p.name||'Playlist').slice(0,80), type:p.type,
-  items:p.items.map(i => ({ id:i.id, title:i.title||'' })), last_index:p.last||0, created_at:p.created });
+  items:p.items.map(i => ({ id:i.id, title:i.title||'' })), last_index:p.last||0, shuffle:p.shuffle!==false, created_at:p.created });
 async function syncNow(){
   if(syncing){ scheduleSync(600); return; }
   if(!dirty.size && !gone.size){ setSync('saved'); return; }
@@ -350,13 +352,13 @@ async function syncNow(){
 async function pull(){
   if(!db.synced) setSync('loading');
   try{
-    const r = await fetch(`${TABLE}?select=id,name,type,items,last_index,created_at&order=created_at.desc`, { headers:HDR });
+    const r = await fetch(`${TABLE}?select=id,name,type,items,last_index,shuffle,created_at&order=created_at.desc`, { headers:HDR });
     if(!r.ok) throw new Error('load');
     const rows = await r.json();
     const local = new Map(db.playlists.map(p => [p.id, p]));
     const out = rows.filter(x => !gone.has(x.id)).map(x =>
       dirty.has(x.id) && local.get(x.id) ? local.get(x.id)
-      : { id:x.id, name:x.name, type:x.type, items:Array.isArray(x.items) ? x.items : [], last:x.last_index||0, created:x.created_at });
+      : { id:x.id, name:x.name, type:x.type, items:Array.isArray(x.items) ? x.items : [], last:x.last_index||0, shuffle:x.shuffle!==false, created:x.created_at });
     db.playlists.forEach(p => { if(dirty.has(p.id) && !rows.some(x => x.id===p.id)) out.push(p); });
     out.sort((a,b) => String(b.created||'').localeCompare(String(a.created||'')));
     db.playlists = out; db.synced = true; save();
@@ -364,7 +366,7 @@ async function pull(){
     if(dirty.size || gone.size) scheduleSync(100);
     if(screen==='home') renderHome();
     if(screen==='editor'){ if(getPl(edId)) renderEditor(); else show('home'); }
-    if(screen==='player' && P.pl){ const np = getPl(P.pl.id); if(np){ P.pl = np; if(P.idx >= np.items.length) P.idx = 0; renderInfo(); } }
+    if(screen==='player' && P.pl){ const np = getPl(P.pl.id); if(np){ const cur = curItem() && curItem().id; P.pl = np; if(np.items.length && P.order.length !== np.items.length) makeOrder(cur); if(np.items.length) renderInfo(); } }
   }catch(e){ setSync('offline'); if(!db.synced && screen==='home') renderHome(); }
 }
 addEventListener('online', () => { scheduleSync(100); });
@@ -599,18 +601,44 @@ function withYT(cb){
 }
 window.onYouTubeIframeAPIReady = () => { const q = apiQueue.splice(0); q.forEach(f => f()); };
 
-const curItem = () => P.pl.items[P.idx];
+/* Play order. P.idx is the position in P.order; P.order holds item indexes.
+   Shuffle (default): a fresh random order every time Play is pressed. In order: 1, 2, 3… and resumes where you stopped. */
+const itemAt = pos => (pos >= 0 && pos < P.order.length) ? P.pl.items[P.order[pos]] : undefined;
+const curItem = () => itemAt(P.idx);
+function shuffled(n){ const a = [...Array(n).keys()]; for(let i = n-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+/* Rebuild the order. keepId: keep this video playing (put first when shuffling); avoidFirstId: don't start with this one. */
+function makeOrder(keepId, avoidFirstId){
+  const items = P.pl.items, n = items.length;
+  if(P.pl.shuffle !== false){
+    let o = shuffled(n);
+    const k = keepId ? items.findIndex(i => i.id === keepId) : -1;
+    if(k >= 0){ o = [k, ...o.filter(x => x !== k)]; }
+    else if(avoidFirstId && n > 1 && items[o[0]].id === avoidFirstId){ o.push(o.shift()); }
+    P.order = o; P.idx = 0;
+  } else {
+    P.order = [...Array(n).keys()];
+    const k = keepId ? items.findIndex(i => i.id === keepId) : -1;
+    P.idx = k >= 0 ? k : Math.min(P.pl.last || 0, n-1);
+  }
+}
+function renderShuf(){ const on = P.pl && P.pl.shuffle !== false; const b = $('#shufBtn'); b.textContent = on ? '🔀 Shuffle' : '➡️ In order'; b.classList.toggle('on', on); }
+$('#shufBtn').onclick = () => {
+  const cur = curItem() && curItem().id;
+  P.pl.shuffle = P.pl.shuffle === false; touch(P.pl.id);
+  makeOrder(cur); renderShuf(); renderInfo();
+  toast(P.pl.shuffle ? 'Shuffle on: videos play in a random order' : 'In order: videos play from first to last');
+};
 
 function openPlayer(plId, fromStart=false){
   const p = getPl(plId); if(!p || !p.items.length) return;
-  P.pl = p; P.idx = fromStart ? 0 : Math.min(p.last||0, p.items.length-1);
+  P.pl = p; if(fromStart) p.last = 0; makeOrder();
   P.kids = !!(db.kids && db.kids.active && db.kids.plId===plId);
   const el = $('#player');
   el.classList.remove('videos','shorts'); el.classList.add(p.type);
   el.classList.toggle('kidson', P.kids);
   $('#pName').textContent = p.name;
   $('#autoBtn').style.display = p.type==='shorts' ? '' : 'none';
-  renderAuto();
+  renderAuto(); renderShuf();
   hideOverlays();
   $('#swipeHint').classList.toggle('on', p.type==='shorts' && !db.hintSeen);
   show('player');
@@ -656,7 +684,7 @@ function onStateChange(e){
 }
 function onError(e){
   toast("This video can't play here — skipping", 2000);
-  setTimeout(() => { if(P.idx < P.pl.items.length-1) go(P.idx+1, 'up'); else showEnd(); }, 1500);
+  setTimeout(() => { if(P.idx < P.order.length-1) go(P.idx+1, 'up'); else showEnd(); }, 1500);
 }
 const isBlocked = () => $('#breakCard').classList.contains('on') || $('#endCard').classList.contains('on');
 
@@ -671,9 +699,10 @@ $('#tapStartBtn').onclick = () => {
 $('#soundChip').onclick = () => { P.yt && P.yt.unMute(); if(P.kids) P.yt.setVolume(60); $('#soundChip').classList.remove('on'); };
 
 function go(i, dir){
-  const n = P.pl.items.length;
+  const n = P.order.length;
   if(i < 0 || i >= n){ bump(); return; }
-  P.idx = i; P.pl.last = i; touch(P.pl.id, 3000);
+  P.idx = i;
+  if(P.pl.shuffle === false){ P.pl.last = P.order[i]; touch(P.pl.id, 3000); }
   hideOverlays();
   const fw = $('#frameWrap');
   fw.classList.remove('slide-up','slide-down'); void fw.offsetWidth;
@@ -703,13 +732,13 @@ function renderInfo(){
   $('#nextBtn').disabled = P.idx === n-1;
   $('#playBtn').textContent = P.playing ? '⏸' : '▶';
   const up = $('#upnext');
-  const nx = p.items[P.idx+1];
+  const nx = itemAt(P.idx+1);
   const open = up.classList.contains('open');
   up.innerHTML = `
     <b>${nx ? 'Up next' : 'Last video'}</b>
     <div class="next-line"><span>${nx ? esc(titleOf(nx)) : 'You are on the last one'}</span>
       <button class="link" id="allBtn">${open ? 'Hide' : `All ${n}`}</button></div>
-    <div class="all">${p.items.map((x,i) => `<button data-go="${i}" class="${i===P.idx?'cur':''}"><img src="${thumb(x.id)}" alt="" loading="lazy">${i+1}. ${esc(titleOf(x))}</button>`).join('')}</div>`;
+    <div class="all">${P.order.map((ii,pos) => { const x = p.items[ii]; return `<button data-go="${pos}" class="${pos===P.idx?'cur':''}"><img src="${thumb(x.id)}" alt="" loading="lazy">${pos+1}. ${esc(titleOf(x))}</button>`; }).join('')}</div>`;
 }
 $('#upnext').onclick = e => {
   if(e.target.closest('#allBtn')){ $('#upnext').classList.toggle('open'); renderInfo(); return; }
@@ -722,7 +751,7 @@ $('#pBack').onclick = () => history.back();
 
 function onEnded(){
   const shorts = P.pl.type === 'shorts';
-  const last = P.idx >= P.pl.items.length-1;
+  const last = P.idx >= P.order.length-1;
   if(shorts){
     if(!db.autoNext){ P.yt.seekTo(0); P.yt.playVideo(); return; }
     if(!last){ go(P.idx+1, 'up'); return; }
@@ -730,7 +759,7 @@ function onEnded(){
   }
   if(last){ showEnd(); return; }
   // Normal videos: a short calm pause before the next one
-  let s = 5; const nx = P.pl.items[P.idx+1];
+  let s = 5; const nx = itemAt(P.idx+1);
   const ec = $('#endCard');
   const draw = () => ec.innerHTML = `
     <p>Next up</p><h3 style="font-size:18px;max-width:420px">${esc(titleOf(nx))}</h3>
@@ -749,7 +778,7 @@ function showEnd(){
     <button class="btn primary" id="ecReplay">↺ Watch again</button>
     ${P.kids ? '' : '<button class="btn ghost" id="ecHome">Back to playlists</button>'}`;
   ec.classList.add('on');
-  $('#ecReplay').onclick = () => go(0, 'down');
+  $('#ecReplay').onclick = () => { if(P.pl.shuffle === false) P.pl.last = 0; const was = curItem() && curItem().id; makeOrder(null, was); go(P.idx, 'down'); renderInfo(); };
   const h = $('#ecHome'); if(h) h.onclick = () => history.back();
 }
 
@@ -780,7 +809,7 @@ function showEnd(){
 })();
 
 /* Shorts auto-next toggle */
-function renderAuto(){ const b=$('#autoBtn'); b.textContent = db.autoNext ? '⇣ Auto-next' : '↻ Loop'; b.classList.toggle('on', db.autoNext); }
+function renderAuto(){ const b=$('#autoBtn'); b.textContent = db.autoNext ? '⇣ Auto' : '↻ Loop'; b.classList.toggle('on', db.autoNext); }
 $('#autoBtn').onclick = () => { db.autoNext = !db.autoNext; save(); renderAuto(); toast(db.autoNext ? 'Goes to the next Short when one ends' : 'Each Short repeats until you swipe'); };
 
 /* ---------- KIDS MODE ---------- */
