@@ -182,9 +182,9 @@ textarea.input{min-height:96px;resize:vertical;font-size:15px}
 #player.kidson .p-ctl button.main{width:92px;height:92px;background:var(--pink);font-size:36px}
 .kids-only{display:none!important}
 #player.kidson .kids-only{display:inline-flex!important}
-#lockBtn{position:relative;overflow:hidden;background:#fff}
-#lockBtn .ring{position:absolute;inset:0;border-radius:inherit;background:conic-gradient(var(--teal) calc(var(--p,0)*1turn),transparent 0);opacity:.25}
-#lockBtn span{position:relative}
+#lockBtn{position:relative;overflow:hidden;background:#fff;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none;min-width:150px;justify-content:center}
+#lockBtn .ring{position:absolute;left:0;top:0;bottom:0;width:calc(var(--p,0)*100%);background:var(--teal);opacity:.3;pointer-events:none}
+#lockBtn span{position:relative;pointer-events:none}
 #timeLeft{background:#fff}
 </style>
 </head>
@@ -238,7 +238,7 @@ textarea.input{min-height:96px;resize:vertical;font-size:15px}
 <section id="player" class="videos">
   <div class="p-top">
     <button class="icon-btn norm-only" id="pBack" aria-label="Back to playlists">←</button>
-    <button class="pill kids-only" id="lockBtn" aria-label="Hold to unlock"><i class="ring"></i><span>🔒 Hold</span></button>
+    <button class="pill kids-only" id="lockBtn" aria-label="Hold for 3 seconds to exit Kids mode"><i class="ring"></i><span id="lockTxt">🔒 Hold to exit</span></button>
     <div class="grow" id="pName"></div>
     <span class="pill kids-only" id="timeLeft"></span>
     <button class="pill norm-only" id="autoBtn" style="display:none">Auto-next</button>
@@ -265,6 +265,7 @@ textarea.input{min-height:96px;resize:vertical;font-size:15px}
         <div style="font-size:54px">🌈</div>
         <h3>Break time!</h3>
         <p>Great watching. Time to rest your eyes and move your body.</p>
+        <p style="font-size:13px">Grown-ups: hold <b>🔒 Hold to exit</b> at the top for 3 seconds.</p>
       </div>
     </div>
   </div>
@@ -798,6 +799,7 @@ function enterKids(mins){
   P.kids = true; $('#player').classList.add('kidson');
   $('#upnext').classList.remove('open');
   buildPlayer(curTime()); renderTime();
+  toast('Kids mode on. To exit: hold 🔒 for 3 seconds', 4000);
 }
 function exitKids(){
   db.kids = null; save(); P.kids = false;
@@ -824,19 +826,35 @@ function renderTime(){
   const left = Math.max(0, db.kids.limit - db.kids.used);
   el.textContent = `⏱ ${Math.ceil(left/60)} min`;
 }
-/* Hold-to-unlock (3 s) */
+/* Hold-to-exit (3 s). Pointer capture + no long-press menu so it works on iPhone and Android. */
 (() => {
-  const b = $('#lockBtn'); let raf = null, t0 = 0;
+  const b = $('#lockBtn'), txt = $('#lockTxt'); let raf = null, t0 = 0, held = false;
   const HOLD = 3000;
-  const stop = () => { cancelAnimationFrame(raf); raf = null; b.style.setProperty('--p', 0); };
+  const reset = () => { cancelAnimationFrame(raf); raf = null; b.style.setProperty('--p', 0); txt.textContent = '🔒 Hold to exit'; };
   const step = () => {
-    const p = (Date.now() - t0) / HOLD; b.style.setProperty('--p', Math.min(p,1));
-    if(p >= 1){ stop(); grownUp(); return; }
+    const p = (Date.now() - t0) / HOLD;
+    b.style.setProperty('--p', Math.min(p, 1));
+    txt.textContent = `Keep holding… ${Math.max(1, Math.ceil((HOLD - (Date.now() - t0)) / 1000))}`;
+    if(p >= 1){ held = false; reset(); grownUp(); return; }
     raf = requestAnimationFrame(step);
   };
-  b.addEventListener('pointerdown', e => { e.preventDefault(); t0 = Date.now(); raf = requestAnimationFrame(step); });
-  ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, stop));
+  const start = e => {
+    e.preventDefault(); if(raf) return;
+    held = true; t0 = Date.now();
+    try{ b.setPointerCapture(e.pointerId); }catch(_){}
+    raf = requestAnimationFrame(step);
+  };
+  const stop = () => {
+    if(!held) return; held = false;
+    if(Date.now() - t0 < HOLD) toast('Keep your finger on 🔒 for 3 seconds');
+    reset();
+  };
+  b.addEventListener('pointerdown', start);
+  b.addEventListener('pointerup', stop);
+  b.addEventListener('pointercancel', stop);
+  b.addEventListener('lostpointercapture', stop);
   b.addEventListener('contextmenu', e => e.preventDefault());
+  b.addEventListener('touchstart', e => e.preventDefault(), { passive:false }); // stops iOS text selection / magnifier
 })();
 function grownUp(){
   const timed = db.kids && db.kids.limit;
