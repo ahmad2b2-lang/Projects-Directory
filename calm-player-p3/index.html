@@ -6,6 +6,12 @@
 <meta name="color-scheme" content="light only">
 <meta name="theme-color" content="#FAF7F2">
 <title>Calm Player</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Calm Player">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
@@ -56,6 +62,15 @@ h1{font-size:26px;margin:8px 0 2px;font-weight:800}
 .foot{display:flex;justify-content:center;gap:6px;margin-top:22px}
 .sync{color:var(--mute);font-weight:700;font-size:13px;padding:8px 0;display:block;text-align:center}
 .sync.bad{color:var(--coral)}
+.share-vid{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.share-vid img{width:96px;height:54px;object-fit:cover;border-radius:10px;background:var(--line);flex:none}
+.share-vid.shorts img{width:40px;height:70px}
+.share-vid b{display:block;font-size:15px;line-height:1.3}
+.share-vid small{color:var(--mute);font-weight:700}
+.pick{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow:auto;margin-bottom:6px}
+.pick button{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px;padding:0 16px;border-radius:14px;border:1.5px solid var(--line);font-weight:800;text-align:left;background:#fff}
+.pick button small{color:var(--mute);font-weight:700;flex:none}
+.pick button.new{border-style:dashed;color:var(--teal)}
 
 /* Editor */
 .field{display:block;margin-bottom:14px}
@@ -199,7 +214,8 @@ textarea.input{min-height:96px;resize:vertical;font-size:15px}
       <input class="input" id="edName" maxlength="60" placeholder="e.g. Science for bedtime">
     </label>
 
-    <label class="field"><span>Add YouTube links</span>
+    <label class="field"><span style="display:flex;justify-content:space-between;align-items:center">Add YouTube links
+        <button type="button" class="link" id="edPaste">📋 Paste</button></span>
       <textarea class="input" id="edLinks" placeholder="Paste one or many links here"></textarea>
     </label>
     <button class="btn ghost big" id="edAdd">Add to playlist</button>
@@ -519,6 +535,14 @@ $('#edType').onclick = () => {
   touch(p.id); renderEditor();
 };
 $('#edName').oninput = e => { const p=getPl(edId); p.name = e.target.value.trim() || 'Untitled playlist'; touch(p.id, 1200); };
+$('#edPaste').onclick = async () => {
+  try{
+    const t = await navigator.clipboard.readText();
+    if(!t || !t.trim()){ toast('Nothing copied yet'); return; }
+    $('#edLinks').value = ($('#edLinks').value.trim() + '\n' + t).trim();
+    $('#edAdd').click();
+  }catch(e){ $('#edLinks').focus(); toast('Long-press the box and choose Paste'); }
+};
 $('#edAdd').onclick = () => {
   const p = getPl(edId);
   const parts = $('#edLinks').value.split(/[\s,]+/).filter(Boolean);
@@ -836,7 +860,71 @@ if(db.kids && db.kids.active){
   const p = getPl(db.kids.plId);
   if(p && p.items.length) openPlayer(p.id); else { db.kids = null; save(); }
 }
-pull();
+/* ---------- Receiving links from the Share menu ----------
+   Android: once Calm Player is added to the home screen, it shows in YouTube's Share menu
+   (manifest share_target) and opens as ./?title=…&text=…&url=…
+   iPhone: an Apple Shortcut can open the same address with ?url=… */
+function readShare(){
+  const q = new URLSearchParams(location.search);
+  if(!q.has('url') && !q.has('text') && !q.has('title')) return null;
+  history.replaceState(history.state, '', location.pathname);
+  const all = [q.get('url'), q.get('text'), q.get('title')].filter(Boolean).join(' ');
+  const found = (all.match(/(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com|youtu\.be)\/[^\s"'<>]+/gi) || [])
+    .map(parseYT).filter(Boolean);
+  const seen = new Set(); const vids = found.filter(v => !seen.has(v.id) && seen.add(v.id));
+  let title = (q.get('title') || '').trim();
+  if(/youtu/i.test(title) || title.length > 150) title = '';
+  return { vids, title };
+}
+function handleShare(sh){
+  if(!sh) return;
+  if(db.kids && db.kids.active) return;            // never interrupt a locked Kids mode session
+  if(!sh.vids.length){ toast("That share didn't include a YouTube link", 3000); return; }
+  const v = sh.vids[0];
+  const type = v.shorts ? 'shorts' : 'videos';
+  const lists = db.playlists.filter(p => p.type === type)
+    .sort((a,b) => (b.id===db.lastShareTo) - (a.id===db.lastShareTo));
+  openSheet(`<h2>Add to a playlist</h2>
+    <div class="share-vid ${type}"><img src="${thumb(v.id)}" alt="">
+      <div><b id="shTitle">${esc(sh.title || 'YouTube ' + (v.shorts ? 'Short' : 'video'))}</b><small>${v.shorts ? 'Short' : 'Video'}</small></div></div>
+    <div class="pick">
+      ${lists.map(p => `<button data-to="${p.id}"><span>${esc(p.name)}</span><small>${p.items.some(i=>i.id===v.id) ? 'Already in' : p.items.length}</small></button>`).join('')}
+      <button class="new" data-to="new">＋ New ${v.shorts ? 'Shorts' : 'Videos'} playlist</button>
+    </div>
+    <div class="row"><button class="btn ghost" id="shNo">Cancel</button></div>`);
+  if(!sh.title) fetchTitleText(v.id).then(t => { if(t){ sh.title = t; const el = $('#shTitle'); if(el) el.textContent = t; } });
+  $('#shNo').onclick = closeSheet;
+  $('#sheet').querySelectorAll('[data-to]').forEach(b => b.onclick = () => {
+    let p;
+    if(b.dataset.to === 'new'){
+      p = { id: uid(), name: v.shorts ? 'My Shorts' : 'My Videos', type, items: [], last: 0, created: new Date().toISOString() };
+      db.playlists.unshift(p);
+    } else p = getPl(b.dataset.to);
+    if(!p) return;
+    db.lastShareTo = p.id;
+    if(p.items.some(i => i.id === v.id)){ save(); closeSheet(); toast(`Already in "${p.name}"`); return; }
+    p.items.push({ id: v.id, title: sh.title || '' });
+    touch(p.id, 100); closeSheet();
+    if(!sh.title) fetchTitle(p.id, v.id);
+    if(screen === 'home') renderHome();
+    openSheet(`<div style="text-align:center"><div style="font-size:44px">✅</div><h2>Added to "${esc(p.name)}"</h2>
+      <p>Now ${p.items.length} ${p.items.length===1?'video':'videos'} in this playlist.</p></div>
+      <div class="row"><button class="btn ghost" id="shEdit">Open playlist</button><button class="btn primary" id="shDone">Done</button></div>`);
+    $('#shDone').onclick = closeSheet;
+    $('#shEdit').onclick = () => { closeSheet(); openEditor(p.id); };
+  });
+}
+async function fetchTitleText(vid){
+  const watch = encodeURIComponent('https://www.youtube.com/watch?v=' + vid);
+  for(const u of [`https://www.youtube.com/oembed?format=json&url=${watch}`, `https://noembed.com/embed?url=${watch}`]){
+    try{ const r = await fetch(u); if(!r.ok) continue; const j = await r.json(); if(j && j.title) return j.title; }catch(e){}
+  }
+  return '';
+}
+const incomingShare = readShare();
+pull().finally(() => handleShare(incomingShare));
+if('serviceWorker' in navigator && location.protocol === 'https:')
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 </script>
 </body>
 </html>
