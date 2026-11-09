@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="theme-color" content="#FAF7F2">
+<title>Calm Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light only;
+  --bg:#FAF7F2; --card:#FFFFFF; --ink:#1F2933; --mute:#6B7280; --line:#ECE6DC;
+  --teal:#2A9D8F; --teal-soft:#E3F3F1; --coral:#E76F51; --coral-soft:#FCE9E3;
+  --sun:#FFD166; --sun-soft:#FFF4D6; --sky:#5AA9E6; --pink:#F49CBB;
+  --r:18px; --shadow:0 2px 10px rgba(31,41,51,.06);
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-tap-highlight-color:transparent;overscroll-behavior:none;font-size:16px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input,textarea{font:inherit;color:var(--ink)}
+.screen{display:none;min-height:100dvh}
+.screen.on{display:block}
+.wrap{max-width:560px;margin:0 auto;padding:calc(16px + var(--safe-t)) 16px calc(32px + var(--safe-b))}
+h1{font-size:26px;margin:8px 0 2px;font-weight:800}
+.sub{color:var(--mute);margin:0 0 20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:14px;font-weight:800;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.primary{background:var(--teal);color:#fff}
+.ghost{background:var(--card);border:1.5px solid var(--line)}
+.danger-text{color:var(--coral);font-weight:700;padding:12px}
+.big{width:100%;min-height:56px;font-size:18px;border-radius:16px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.icon-btn{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--card);border:1.5px solid var(--line);font-size:20px;flex:none}
+
+/* Home */
+.pl{display:flex;gap:14px;background:var(--card);border-radius:var(--r);padding:12px;margin-bottom:12px;box-shadow:var(--shadow);align-items:center}
+.pl-thumb{position:relative;flex:none;width:96px;height:72px;border-radius:12px;overflow:hidden;background:var(--teal-soft)}
+.pl-thumb.shorts{width:58px;height:96px;background:var(--coral-soft)}
+.pl-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.badge{position:absolute;left:5px;bottom:5px;font-size:11px;font-weight:800;padding:2px 7px;border-radius:8px;background:#fff;color:var(--teal)}
+.shorts .badge{color:var(--coral)}
+.pl-body{flex:1;min-width:0}
+.pl-name{font-weight:800;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-meta{color:var(--mute);font-size:14px;margin:2px 0 10px}
+.pl-actions{display:flex;gap:8px}
+.pl-actions .btn{min-height:40px;padding:0 14px;font-size:15px}
+.empty{text-align:center;padding:40px 20px;color:var(--mute);background:var(--card);border-radius:var(--r);border:2px dashed var(--line);margin-bottom:16px}
+.empty b{display:block;color:var(--ink);font-size:18px;margin-bottom:6px}
+.foot{display:flex;justify-content:center;gap:6px;margin-top:22px}
+.sync{color:var(--mute);font-weight:700;font-size:13px;padding:8px 0;display:block;text-align:center}
+.sync.bad{color:var(--coral)}
+
+/* Editor */
+.field{display:block;margin-bottom:14px}
+.field span{display:block;font-weight:700;font-size:14px;color:var(--mute);margin-bottom:6px}
+.input{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:13px 14px;font-size:17px;outline:none}
+.input:focus{border-color:var(--teal)}
+textarea.input{min-height:96px;resize:vertical;font-size:15px}
+.typechip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-weight:800;font-size:14px}
+.typechip.videos{background:var(--teal-soft);color:var(--teal)}
+.typechip.shorts{background:var(--coral-soft);color:var(--coral)}
+.hint{font-size:13px;color:var(--mute);margin:6px 0 0}
+.msg{font-size:14px;margin:10px 0 0;padding:10px 12px;border-radius:12px;background:var(--sun-soft);display:none}
+.msg.on{display:block}
+.items{margin:18px 0}
+.item{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:8px;margin-bottom:8px;box-shadow:var(--shadow)}
+.item .n{width:22px;text-align:center;color:var(--mute);font-weight:800;font-size:13px;flex:none}
+.item img{width:64px;height:40px;border-radius:8px;object-fit:cover;flex:none;background:var(--line)}
+.shorts-list .item img{width:34px;height:56px}
+.item .t{flex:1;min-width:0;font-size:14px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.item .t input{width:100%;border:1.5px solid var(--teal);border-radius:8px;padding:6px;font-size:14px}
+.item .ctl{display:flex;gap:2px;flex:none}
+.item .ctl button{width:34px;height:34px;border-radius:10px;font-size:15px;color:var(--mute)}
+.item .ctl button:active{background:var(--bg)}
+.sticky-bottom{position:sticky;bottom:0;padding:12px 0 calc(8px + var(--safe-b));background:linear-gradient(transparent,var(--bg) 30%)}
+
+/* Type picker */
+.types{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 4px}
+.type-card{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:16px 10px;text-align:center;font-weight:800}
+.type-card .shape{margin:0 auto 10px;border-radius:8px}
+.type-card.videos .shape{width:72px;height:42px;background:var(--teal)}
+.type-card.shorts .shape{width:34px;height:58px;background:var(--coral)}
+.type-card small{display:block;color:var(--mute);font-weight:600;margin-top:4px}
+
+/* Sheet / modal */
+.backdrop{position:fixed;inset:0;background:rgba(31,41,51,.28);display:none;z-index:50;align-items:flex-end;justify-content:center}
+.backdrop.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:20px 18px calc(20px + var(--safe-b));animation:up .22s ease}
+.sheet h2{margin:0 0 6px;font-size:21px}
+.sheet p{color:var(--mute);margin:0 0 16px;line-height:1.45}
+.sheet .row{display:flex;gap:10px;margin-top:10px}
+.sheet .row .btn{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 16px}
+.chip{padding:10px 16px;border-radius:999px;border:2px solid var(--line);font-weight:800;background:#fff}
+.chip.on{border-color:var(--teal);background:var(--teal-soft);color:var(--teal)}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.toast{position:fixed;left:50%;bottom:calc(24px + var(--safe-b));transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:14px;font-weight:700;font-size:15px;z-index:80;max-width:90vw;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+
+/* Player */
+#player{position:fixed;inset:0;display:none;flex-direction:column;background:var(--bg);z-index:10;padding:calc(10px + var(--safe-t)) 12px calc(12px + var(--safe-b))}
+#player.on{display:flex}
+.p-top{display:flex;align-items:center;gap:8px;min-height:46px}
+.p-top .grow{flex:1;min-width:0;text-align:center;font-weight:800;color:var(--mute);font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:var(--card);border:1.5px solid var(--line);font-weight:800;font-size:14px;min-height:44px}
+.pill.on{background:var(--sun-soft);border-color:var(--sun)}
+#stage{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative}
+#frameWrap{position:relative;border-radius:20px;overflow:hidden;background:#E9E3D8;box-shadow:0 6px 24px rgba(31,41,51,.12)}
+#player.videos #frameWrap{width:100%;max-width:960px;aspect-ratio:16/9}
+#player.shorts #frameWrap{height:100%;max-height:calc(100dvh - 150px);aspect-ratio:9/16;max-width:100%}
+#frame,#frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+#gesture{position:absolute;inset:0;z-index:3;touch-action:none;display:none}
+#player.shorts #gesture,#player.kidson #gesture{display:block}
+.flash{position:absolute;left:50%;top:50%;width:84px;height:84px;margin:-42px 0 0 -42px;border-radius:50%;background:rgba(255,255,255,.88);display:grid;place-items:center;font-size:34px;z-index:4;opacity:0;pointer-events:none;transition:opacity .25s}
+.flash.on{opacity:1}
+.overlay{position:absolute;inset:0;z-index:5;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(250,247,242,.94);text-align:center;padding:20px}
+.overlay.on{display:flex}
+.overlay h3{margin:0;font-size:22px}
+.overlay p{margin:0;color:var(--mute);max-width:320px}
+.round{width:76px;height:76px;border-radius:50%;background:var(--teal);color:#fff;font-size:30px;display:grid;place-items:center;box-shadow:0 6px 18px rgba(42,157,143,.35)}
+#soundChip{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:6;display:none}
+#soundChip.on{display:inline-flex}
+.counter{position:absolute;right:10px;top:10px;z-index:4;background:rgba(255,255,255,.9);border-radius:999px;padding:4px 10px;font-weight:800;font-size:13px;pointer-events:none}
+#player.videos .counter{display:none}
+.swipe-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:4;background:rgba(255,255,255,.92);padding:8px 14px;border-radius:999px;font-weight:800;font-size:14px;pointer-events:none;animation:nudge 1.6s ease-in-out infinite;display:none}
+.swipe-hint.on{display:block}
+@keyframes nudge{50%{transform:translate(-50%,-8px)}}
+.slide-up{animation:slideUp .3s ease}
+.slide-down{animation:slideDown .3s ease}
+@keyframes slideUp{from{transform:translateY(60px);opacity:.2}to{transform:none;opacity:1}}
+@keyframes slideDown{from{transform:translateY(-60px);opacity:.2}to{transform:none;opacity:1}}
+@keyframes shake{25%{transform:translateY(-8px)}75%{transform:translateY(8px)}}
+.shake{animation:shake .25s}
+
+.p-info{padding:12px 4px 0;max-width:960px;width:100%;margin:0 auto}
+.p-title{font-weight:800;font-size:18px;line-height:1.3;margin:0 0 10px}
+.p-ctl{display:flex;align-items:center;justify-content:center;gap:18px;padding:6px 0}
+.p-ctl button{width:58px;height:58px;border-radius:50%;background:var(--card);border:1.5px solid var(--line);font-size:22px;display:grid;place-items:center}
+.p-ctl button.main{width:70px;height:70px;background:var(--teal);color:#fff;border:0;font-size:26px}
+.p-ctl button[disabled]{opacity:.3}
+#player.shorts .p-title{display:none}
+#player.shorts .p-info{padding-top:8px}
+.upnext{margin-top:8px;background:var(--card);border-radius:14px;padding:10px 12px;font-size:14px}
+.upnext b{color:var(--mute);font-size:12px;letter-spacing:.04em;text-transform:uppercase;display:block}
+.upnext .next-line{font-weight:700;margin-top:2px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.upnext .next-line span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upnext .all{max-height:32vh;overflow:auto;margin-top:8px;display:none}
+.upnext.open .all{display:block}
+.upnext .all button{display:flex;gap:10px;width:100%;text-align:left;padding:8px 4px;border-top:1px solid var(--line);font-weight:600;align-items:center}
+.upnext .all button.cur{color:var(--teal);font-weight:800}
+.upnext .all img{width:52px;height:30px;object-fit:cover;border-radius:6px;flex:none}
+.link{color:var(--teal);font-weight:800;font-size:14px;padding:6px 0;flex:none}
+#player.shorts .upnext{display:none}
+
+/* Kids mode */
+#player.kidson{background:var(--sun-soft)}
+#player.kidson .p-title,#player.kidson .upnext,#player.kidson .norm-only{display:none!important}
+#player.kidson #frameWrap{border:6px solid #fff}
+#player.kidson .p-ctl button{width:72px;height:72px;font-size:28px;border:0;background:#fff;box-shadow:0 4px 0 rgba(0,0,0,.08)}
+#player.kidson .p-ctl button.main{width:92px;height:92px;background:var(--pink);font-size:36px}
+.kids-only{display:none!important}
+#player.kidson .kids-only{display:inline-flex!important}
+#lockBtn{position:relative;overflow:hidden;background:#fff}
+#lockBtn .ring{position:absolute;inset:0;border-radius:inherit;background:conic-gradient(var(--teal) calc(var(--p,0)*1turn),transparent 0);opacity:.25}
+#lockBtn span{position:relative}
+#timeLeft{background:#fff}
+</style>
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<section class="screen on" id="home">
+  <div class="wrap">
+    <h1>Calm Player</h1>
+    <p class="sub">Your playlists. One tap to play.</p>
+    <div id="plList"></div>
+    <button class="btn primary big" id="newBtn">＋ New playlist</button>
+    <div class="foot"><span class="sync"></span></div>
+  </div>
+</section>
+
+<!-- ============ MODULE 1: EDITOR ============ -->
+<section class="screen" id="editor">
+  <div class="wrap">
+    <div class="top">
+      <button class="icon-btn" id="edBack" aria-label="Back">←</button>
+      <div style="flex:1;font-weight:800;font-size:18px">Edit playlist</div>
+      <span class="typechip" id="edType"></span>
+    </div>
+
+    <label class="field"><span>Name</span>
+      <input class="input" id="edName" maxlength="60" placeholder="e.g. Science for bedtime">
+    </label>
+
+    <label class="field"><span>Add YouTube links</span>
+      <textarea class="input" id="edLinks" placeholder="Paste one or many links here"></textarea>
+    </label>
+    <button class="btn ghost big" id="edAdd">Add to playlist</button>
+    <p class="hint" id="edHint"></p>
+    <div class="msg" id="edMsg"></div>
+
+    <div class="items" id="edItems"></div>
+
+    <div class="sticky-bottom">
+      <button class="btn primary big" id="edPlay">▶ Play this playlist</button>
+    </div>
+    <div style="text-align:center"><button class="danger-text" id="edDelete">Delete playlist</button></div>
+    <span class="sync"></span>
+  </div>
+</section>
+
+<!-- ============ MODULE 2: PLAYER ============ -->
+<section id="player" class="videos">
+  <div class="p-top">
+    <button class="icon-btn norm-only" id="pBack" aria-label="Back to playlists">←</button>
+    <button class="pill kids-only" id="lockBtn" aria-label="Hold to unlock"><i class="ring"></i><span>🔒 Hold</span></button>
+    <div class="grow" id="pName"></div>
+    <span class="pill kids-only" id="timeLeft"></span>
+    <button class="pill norm-only" id="autoBtn" style="display:none">Auto-next</button>
+    <button class="pill norm-only" id="kidsBtn">🧸 Kids</button>
+  </div>
+
+  <div id="stage">
+    <div id="frameWrap">
+      <div id="frame"></div>
+      <div id="gesture"></div>
+      <div class="counter" id="counter"></div>
+      <div class="flash" id="flash"></div>
+      <div class="swipe-hint" id="swipeHint">↑ Swipe up for next</div>
+      <button class="pill" id="soundChip">🔇 Tap for sound</button>
+
+      <div class="overlay" id="tapStart">
+        <button class="round" id="tapStartBtn" aria-label="Play">▶</button>
+        <p>Tap to start</p>
+      </div>
+
+      <div class="overlay" id="endCard"></div>
+
+      <div class="overlay" id="breakCard">
+        <div style="font-size:54px">🌈</div>
+        <h3>Break time!</h3>
+        <p>Great watching. Time to rest your eyes and move your body.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-info">
+    <p class="p-title" id="pTitle"></p>
+    <div class="p-ctl">
+      <button id="prevBtn" aria-label="Previous">⏮</button>
+      <button class="main" id="playBtn" aria-label="Play or pause">▶</button>
+      <button id="nextBtn" aria-label="Next">⏭</button>
+    </div>
+    <div class="upnext" id="upnext"></div>
+  </div>
+</section>
+
+<div class="backdrop" id="backdrop"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- helpers & storage ---------- */
+const $ = s => document.querySelector(s);
+/* Playlists live in Supabase ("First Project", table player_playlists).
+   This device keeps a copy so the app opens fast and works through short drops in the connection.
+   Kids mode, Auto-next and the swipe hint are per-device settings and stay on this device only. */
+const KEY = 'calmplayer.v2';
+const SB_URL = "https://bhfgwlkzkbwcwyoypwhy.supabase.co";
+const SB_KEY = "sb_publishable_9YylflVQca-62NHsBKSTeA_GY896nj3";
+const TABLE = `${SB_URL}/rest/v1/player_playlists`;
+const HDR = { apikey: SB_KEY, 'Content-Type': 'application/json' };
+
+let db = { playlists: [], kids: null, autoNext: true, hintSeen: false, dirty: [], gone: [], synced: false };
+function load(){
+  try{ const r = localStorage.getItem(KEY); if(r) db = Object.assign(db, JSON.parse(r)); }catch(e){}
+  if(!Array.isArray(db.playlists)) db.playlists = [];
+}
+let dirty, gone;
+function save(){
+  db.dirty = [...dirty]; db.gone = [...gone];
+  try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){}
+}
+/* call after any change to a playlist */
+function touch(id, delay=700){ dirty.add(id); save(); scheduleSync(delay); }
+
+let syncT = null, syncing = false, syncState = 'saved';
+function setSync(s){
+  syncState = s;
+  const txt = { saved:'☁️ Saved online', saving:'Saving…', offline:"Offline — changes will save when you're back online", loading:'Loading your playlists…' }[s];
+  document.querySelectorAll('.sync').forEach(el => { el.textContent = txt; el.classList.toggle('bad', s==='offline'); });
+}
+function scheduleSync(ms=700){ clearTimeout(syncT); syncT = setTimeout(syncNow, ms); }
+const toRow = p => ({ id:p.id, name:(p.name||'Playlist').slice(0,80), type:p.type,
+  items:p.items.map(i => ({ id:i.id, title:i.title||'' })), last_index:p.last||0, created_at:p.created });
+async function syncNow(){
+  if(syncing){ scheduleSync(600); return; }
+  if(!dirty.size && !gone.size){ setSync('saved'); return; }
+  syncing = true; setSync('saving');
+  const delIds = [...gone], upIds = [...dirty];
+  gone.clear(); dirty.clear();
+  try{
+    if(delIds.length){
+      const r = await fetch(`${TABLE}?id=in.(${delIds.join(',')})`, { method:'DELETE', headers:HDR });
+      if(!r.ok) throw new Error('delete');
+    }
+    const rows = upIds.map(getPl).filter(Boolean).map(toRow);
+    if(rows.length){
+      const r = await fetch(TABLE, { method:'POST', headers:{ ...HDR, Prefer:'resolution=merge-duplicates,return=minimal' }, body:JSON.stringify(rows) });
+      if(!r.ok) throw new Error('save');
+    }
+    save(); setSync(dirty.size || gone.size ? 'saving' : 'saved');
+    if(dirty.size || gone.size) scheduleSync(300);
+  }catch(e){
+    delIds.forEach(i => gone.add(i)); upIds.forEach(i => { if(getPl(i)) dirty.add(i); });
+    save(); setSync('offline'); scheduleSync(8000);
+  }finally{ syncing = false; }
+}
+async function pull(){
+  if(!db.synced) setSync('loading');
+  try{
+    const r = await fetch(`${TABLE}?select=id,name,type,items,last_index,created_at&order=created_at.desc`, { headers:HDR });
+    if(!r.ok) throw new Error('load');
+    const rows = await r.json();
+    const local = new Map(db.playlists.map(p => [p.id, p]));
+    const out = rows.filter(x => !gone.has(x.id)).map(x =>
+      dirty.has(x.id) && local.get(x.id) ? local.get(x.id)
+      : { id:x.id, name:x.name, type:x.type, items:Array.isArray(x.items) ? x.items : [], last:x.last_index||0, created:x.created_at });
+    db.playlists.forEach(p => { if(dirty.has(p.id) && !rows.some(x => x.id===p.id)) out.push(p); });
+    out.sort((a,b) => String(b.created||'').localeCompare(String(a.created||'')));
+    db.playlists = out; db.synced = true; save();
+    setSync(dirty.size || gone.size ? 'saving' : 'saved');
+    if(dirty.size || gone.size) scheduleSync(100);
+    if(screen==='home') renderHome();
+    if(screen==='editor'){ if(getPl(edId)) renderEditor(); else show('home'); }
+    if(screen==='player' && P.pl){ const np = getPl(P.pl.id); if(np){ P.pl = np; if(P.idx >= np.items.length) P.idx = 0; renderInfo(); } }
+  }catch(e){ setSync('offline'); if(!db.synced && screen==='home') renderHome(); }
+}
+addEventListener('online', () => { scheduleSync(100); });
+document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible' && screen==='home') pull(); });
+const uid = () => (Date.now().toString(36) + Math.random().toString(36).slice(2,6)).slice(-12);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const thumb = id => `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
+const getPl = id => db.playlists.find(p => p.id === id);
+const titleOf = it => it.title || 'Untitled video';
+
+let toastT;
+function toast(t, ms=2200){ const el=$('#toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('on'), ms); }
+
+function openSheet(html, closable=true){
+  $('#sheet').innerHTML = html; const b=$('#backdrop'); b.classList.add('on');
+  b.onclick = e => { if(closable && e.target===b) closeSheet(); };
+}
+function closeSheet(){ $('#backdrop').classList.remove('on'); }
+function confirmBox(title, text, okLabel, onOk){
+  openSheet(`<h2>${esc(title)}</h2><p>${esc(text)}</p>
+    <div class="row"><button class="btn ghost" id="cNo">Cancel</button><button class="btn primary" id="cOk" style="background:var(--coral)">${esc(okLabel)}</button></div>`);
+  $('#cNo').onclick = closeSheet; $('#cOk').onclick = () => { closeSheet(); onOk(); };
+}
+
+/* ---------- navigation ---------- */
+let screen = 'home';
+function show(name, push=true){
+  if(screen==='player' && name!=='player') closePlayer();
+  screen = name;
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id===name));
+  $('#player').classList.toggle('on', name==='player');
+  if(name==='home') renderHome();
+  setSync(syncState);
+  if(push) history.pushState({screen:name}, '');
+  window.scrollTo(0,0);
+}
+addEventListener('popstate', e => {
+  if(db.kids && db.kids.active && screen==='player'){ history.pushState({screen:'player'}, ''); return; }
+  closeSheet();
+  show((e.state && e.state.screen) || 'home', false);
+});
+
+/* ---------- YouTube URL parsing ---------- */
+function parseYT(s){
+  s = s.trim(); if(!s) return null;
+  if(/^[\w-]{11}$/.test(s)) return { id:s, shorts:false };
+  if(!/^https?:\/\//i.test(s)) s = 'https://' + s;
+  let u; try{ u = new URL(s); }catch(e){ return null; }
+  const h = u.hostname.replace(/^(www\.|m\.|music\.)/, '');
+  let id = null, shorts = false;
+  if(h === 'youtu.be') id = u.pathname.split('/')[1];
+  else if(h === 'youtube.com' || h === 'youtube-nocookie.com'){
+    const seg = u.pathname.split('/').filter(Boolean);
+    if(seg[0] === 'watch') id = u.searchParams.get('v');
+    else if(['shorts','embed','live','v','e'].includes(seg[0])){ id = seg[1]; shorts = seg[0]==='shorts'; }
+  }
+  return id && /^[\w-]{11}$/.test(id) ? { id, shorts } : null;
+}
+
+async function fetchTitle(plId, vid){
+  const watch = encodeURIComponent('https://www.youtube.com/watch?v=' + vid);
+  const urls = [`https://www.youtube.com/oembed?format=json&url=${watch}`, `https://noembed.com/embed?url=${watch}`];
+  for(const u of urls){
+    try{
+      const r = await fetch(u); if(!r.ok) continue;
+      const j = await r.json();
+      if(j && j.title){
+        const p = getPl(plId); const it = p && p.items.find(i => i.id===vid);
+        if(it && !it.title){ it.title = j.title; touch(plId, 1500); if(screen==='editor' && edId===plId) renderItems(); }
+        return;
+      }
+    }catch(e){}
+  }
+}
+
+/* ---------- HOME ---------- */
+function renderHome(){
+  const L = $('#plList');
+  if(!db.playlists.length && !db.synced){
+    L.innerHTML = syncState==='offline'
+      ? `<div class="empty"><b>Can't reach your playlists</b>Check your internet, then reopen the app.</div>`
+      : `<div class="empty"><b>Loading…</b>Getting your playlists.</div>`;
+    return;
+  }
+  if(!db.playlists.length){
+    L.innerHTML = `<div class="empty"><b>No playlists yet</b>Make your first one — paste a few YouTube links and you're done.</div>`;
+    return;
+  }
+  L.innerHTML = db.playlists.map(p => `
+    <div class="pl">
+      <div class="pl-thumb ${p.type}">${p.items[0] ? `<img src="${thumb(p.items[0].id)}" alt="" loading="lazy">` : ''}
+        <span class="badge">${p.type==='shorts' ? 'Shorts' : 'Videos'}</span></div>
+      <div class="pl-body">
+        <div class="pl-name">${esc(p.name)}</div>
+        <div class="pl-meta">${p.items.length} ${p.items.length===1?'video':'videos'}</div>
+        <div class="pl-actions">
+          <button class="btn primary" data-play="${p.id}" ${p.items.length?'':'disabled'}>▶ Play</button>
+          <button class="btn ghost" data-edit="${p.id}">Edit</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+$('#plList').onclick = e => {
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.play) openPlayer(b.dataset.play);
+  if(b.dataset.edit) openEditor(b.dataset.edit);
+};
+$('#newBtn').onclick = () => {
+  openSheet(`<h2>New playlist</h2><p>Pick one kind. A playlist holds only one kind of video.</p>
+    <div class="types">
+      <button class="type-card videos" data-t="videos"><div class="shape"></div>Videos<small>Normal wide videos</small></button>
+      <button class="type-card shorts" data-t="shorts"><div class="shape"></div>Shorts<small>Vertical, swipe to next</small></button>
+    </div>`);
+  $('#sheet').querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
+    const t = b.dataset.t;
+    const p = { id: uid(), name: t==='shorts' ? 'My Shorts' : 'My Videos', type: t, items: [], last: 0, created: new Date().toISOString() };
+    db.playlists.unshift(p); touch(p.id, 100); closeSheet(); openEditor(p.id);
+  });
+};
+/* ---------- MODULE 1: EDITOR ---------- */
+let edId = null;
+function openEditor(id){
+  edId = id; const p = getPl(id); if(!p) return;
+  $('#edName').value = p.name;
+  $('#edMsg').classList.remove('on'); $('#edLinks').value = '';
+  renderEditor(); show('editor');
+}
+function renderEditor(){
+  const p = getPl(edId);
+  const chip = $('#edType');
+  chip.className = 'typechip ' + p.type;
+  chip.textContent = (p.type==='shorts' ? '▮ Shorts' : '▬ Videos') + (p.items.length ? '' : ' ⇄');
+  $('#edHint').textContent = p.type==='shorts'
+    ? 'Use Shorts links (youtube.com/shorts/…). Regular links work too, but should be Shorts.'
+    : 'Use normal video links. Shorts links are left out of this playlist.';
+  renderItems();
+}
+function renderItems(){
+  const p = getPl(edId); const box = $('#edItems');
+  box.className = 'items' + (p.type==='shorts' ? ' shorts-list' : '');
+  $('#edPlay').disabled = !p.items.length;
+  if(!p.items.length){ box.innerHTML = `<p class="hint" style="text-align:center">No videos yet.</p>`; return; }
+  box.innerHTML = p.items.map((it,i) => `
+    <div class="item" data-i="${i}">
+      <span class="n">${i+1}</span>
+      <img src="${thumb(it.id)}" alt="" loading="lazy">
+      <div class="t" data-rename="${i}">${esc(titleOf(it))}</div>
+      <div class="ctl">
+        <button data-up="${i}" aria-label="Move up" ${i===0?'disabled style="opacity:.25"':''}>↑</button>
+        <button data-down="${i}" aria-label="Move down" ${i===p.items.length-1?'disabled style="opacity:.25"':''}>↓</button>
+        <button data-del="${i}" aria-label="Remove">✕</button>
+      </div>
+    </div>`).join('');
+}
+$('#edItems').onclick = e => {
+  const p = getPl(edId); const t = e.target.closest('[data-up],[data-down],[data-del],[data-rename]'); if(!t) return;
+  const d = t.dataset;
+  if(d.up !== undefined){ const i=+d.up; [p.items[i-1],p.items[i]]=[p.items[i],p.items[i-1]]; }
+  else if(d.down !== undefined){ const i=+d.down; [p.items[i+1],p.items[i]]=[p.items[i],p.items[i+1]]; }
+  else if(d.del !== undefined){ p.items.splice(+d.del,1); if(p.last>=p.items.length) p.last=0; }
+  else if(d.rename !== undefined){
+    if(t.querySelector('input')) return;
+    const it = p.items[+d.rename];
+    t.innerHTML = `<input value="${esc(it.title)}" placeholder="Video title">`;
+    const inp = t.querySelector('input'); inp.focus(); inp.select();
+    const done = () => { it.title = inp.value.trim(); touch(p.id); renderItems(); };
+    inp.onblur = done; inp.onkeydown = ev => { if(ev.key==='Enter') inp.blur(); };
+    return;
+  }
+  touch(p.id); renderEditor();
+};
+$('#edType').onclick = () => {
+  const p = getPl(edId);
+  if(p.items.length){ toast('Type is fixed once a playlist has videos'); return; }
+  p.type = p.type==='shorts' ? 'videos' : 'shorts';
+  if(/^My (Shorts|Videos)$/.test(p.name)){ p.name = p.type==='shorts'?'My Shorts':'My Videos'; $('#edName').value=p.name; }
+  touch(p.id); renderEditor();
+};
+$('#edName').oninput = e => { const p=getPl(edId); p.name = e.target.value.trim() || 'Untitled playlist'; touch(p.id, 1200); };
+$('#edAdd').onclick = () => {
+  const p = getPl(edId);
+  const parts = $('#edLinks').value.split(/[\s,]+/).filter(Boolean);
+  if(!parts.length){ toast('Paste a link first'); return; }
+  let dup=0, bad=0, wrong=0; const added=[];
+  for(const s of parts){
+    const r = parseYT(s);
+    if(!r){ bad++; continue; }
+    if(p.type==='videos' && r.shorts){ wrong++; continue; }
+    if(p.items.some(i=>i.id===r.id) || added.some(i=>i.id===r.id)){ dup++; continue; }
+    added.push({ id:r.id, title:'' });
+  }
+  p.items.push(...added); touch(p.id, 100);
+  $('#edLinks').value = '';
+  const lines = [];
+  if(added.length) lines.push(`✅ Added ${added.length}`);
+  if(dup) lines.push(`↺ ${dup} already in the list`);
+  if(wrong) lines.push(`✋ ${wrong} Shorts link${wrong>1?'s':''} skipped (this is a Videos playlist)`);
+  if(bad) lines.push(`⚠️ ${bad} not a YouTube link`);
+  const m = $('#edMsg'); m.innerHTML = lines.join('<br>'); m.classList.add('on');
+  renderEditor();
+  added.forEach(it => fetchTitle(p.id, it.id));
+};
+$('#edBack').onclick = () => history.back();
+$('#edPlay').onclick = () => openPlayer(edId, true);
+$('#edDelete').onclick = () => {
+  const p = getPl(edId);
+  confirmBox('Delete playlist?', `"${p.name}" will be removed from this device.`, 'Delete', () => {
+    db.playlists = db.playlists.filter(x => x.id !== edId); dirty.delete(edId); gone.add(edId); save(); scheduleSync(100); show('home');
+  });
+};
+
+/* ---------- MODULE 2: PLAYER ---------- */
+const P = { pl:null, idx:0, yt:null, kids:false, playing:false, tick:null, countdown:null, needSound:false };
+let apiQueue = [], apiLoading = false;
+function withYT(cb){
+  if(window.YT && YT.Player) return cb();
+  apiQueue.push(cb);
+  if(!apiLoading){
+    apiLoading = true;
+    const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api';
+    s.onerror = () => { apiLoading=false; toast("Couldn't reach YouTube. Check your internet.", 3500); };
+    document.head.appendChild(s);
+  }
+}
+window.onYouTubeIframeAPIReady = () => { const q = apiQueue.splice(0); q.forEach(f => f()); };
+
+const curItem = () => P.pl.items[P.idx];
+
+function openPlayer(plId, fromStart=false){
+  const p = getPl(plId); if(!p || !p.items.length) return;
+  P.pl = p; P.idx = fromStart ? 0 : Math.min(p.last||0, p.items.length-1);
+  P.kids = !!(db.kids && db.kids.active && db.kids.plId===plId);
+  const el = $('#player');
+  el.classList.remove('videos','shorts'); el.classList.add(p.type);
+  el.classList.toggle('kidson', P.kids);
+  $('#pName').textContent = p.name;
+  $('#autoBtn').style.display = p.type==='shorts' ? '' : 'none';
+  renderAuto();
+  hideOverlays();
+  $('#swipeHint').classList.toggle('on', p.type==='shorts' && !db.hintSeen);
+  show('player');
+  buildPlayer(0);
+  renderInfo();
+  startTick();
+}
+function closePlayer(){
+  clearInterval(P.tick); clearInterval(P.countdown);
+  if(P.yt){ try{ P.yt.destroy(); }catch(e){} P.yt = null; }
+  $('#frame').innerHTML = ''; P.playing = false;
+}
+function buildPlayer(start){
+  withYT(() => {
+    if(screen !== 'player') return;
+    if(P.yt){ try{ P.yt.destroy(); }catch(e){} P.yt = null; }
+    $('#frame').innerHTML = '<div id="ytHolder"></div>';
+    const shorts = P.pl.type === 'shorts';
+    const pv = { playsinline:1, rel:0, modestbranding:1, iv_load_policy:3, autoplay:1,
+      controls: (shorts || P.kids) ? 0 : 1, disablekb: P.kids ? 1 : 0, fs: (shorts || P.kids) ? 0 : 1 };
+    if(start) pv.start = Math.floor(start);
+    if(location.origin && location.origin !== 'null') pv.origin = location.origin;
+    P.yt = new YT.Player('ytHolder', {
+      host: 'https://www.youtube-nocookie.com', videoId: curItem().id, playerVars: pv,
+      events: { onReady, onStateChange, onError }
+    });
+  });
+}
+function onReady(){
+  if(P.kids) P.yt.setVolume(60);
+  try{ P.yt.playVideo(); }catch(e){}
+  setTimeout(() => { if(!P.playing && !isBlocked()) $('#tapStart').classList.add('on'); }, 1500);
+}
+function onStateChange(e){
+  const S = YT.PlayerState;
+  if(e.data === S.PLAYING){
+    if(isBlocked()){ P.yt.pauseVideo(); return; }
+    P.playing = true; $('#tapStart').classList.remove('on');
+    if(P.kids) P.yt.setVolume(60);
+  } else if(e.data === S.PAUSED || e.data === S.ENDED){ P.playing = false; }
+  if(e.data === S.ENDED) onEnded();
+  $('#playBtn').textContent = P.playing ? '⏸' : '▶';
+}
+function onError(e){
+  toast("This video can't play here — skipping", 2000);
+  setTimeout(() => { if(P.idx < P.pl.items.length-1) go(P.idx+1, 'up'); else showEnd(); }, 1500);
+}
+const isBlocked = () => $('#breakCard').classList.contains('on') || $('#endCard').classList.contains('on');
+
+$('#tapStartBtn').onclick = () => {
+  $('#tapStart').classList.remove('on');
+  if(!P.yt || !P.yt.playVideo) return;
+  P.yt.playVideo();
+  setTimeout(() => {
+    if(!P.playing){ P.yt.mute(); P.yt.playVideo(); P.needSound = true; $('#soundChip').classList.add('on'); }
+  }, 900);
+};
+$('#soundChip').onclick = () => { P.yt && P.yt.unMute(); if(P.kids) P.yt.setVolume(60); $('#soundChip').classList.remove('on'); };
+
+function go(i, dir){
+  const n = P.pl.items.length;
+  if(i < 0 || i >= n){ bump(); return; }
+  P.idx = i; P.pl.last = i; touch(P.pl.id, 3000);
+  hideOverlays();
+  const fw = $('#frameWrap');
+  fw.classList.remove('slide-up','slide-down'); void fw.offsetWidth;
+  if(dir) fw.classList.add(dir==='down' ? 'slide-down' : 'slide-up');
+  if(P.yt && P.yt.loadVideoById) P.yt.loadVideoById(curItem().id); else buildPlayer(0);
+  renderInfo();
+  if(dir==='up' && P.pl.type==='shorts' && !db.hintSeen){ db.hintSeen = true; save(); $('#swipeHint').classList.remove('on'); }
+}
+function bump(){ const fw=$('#frameWrap'); fw.classList.remove('shake'); void fw.offsetWidth; fw.classList.add('shake'); }
+function hideOverlays(){
+  clearInterval(P.countdown);
+  ['#endCard','#tapStart'].forEach(s => $(s).classList.remove('on'));
+}
+function togglePlay(){
+  if(!P.yt || !P.yt.getPlayerState || isBlocked()) return;
+  const st = P.yt.getPlayerState();
+  if(st === 1){ P.yt.pauseVideo(); flash('⏸'); } else { P.yt.playVideo(); flash('▶'); }
+}
+let flashT;
+function flash(c){ const f=$('#flash'); f.textContent=c; f.classList.add('on'); clearTimeout(flashT); flashT=setTimeout(()=>f.classList.remove('on'),500); }
+
+function renderInfo(){
+  const p = P.pl, it = curItem(), n = p.items.length;
+  $('#pTitle').textContent = titleOf(it);
+  $('#counter').textContent = `${P.idx+1} / ${n}`;
+  $('#prevBtn').disabled = P.idx === 0;
+  $('#nextBtn').disabled = P.idx === n-1;
+  $('#playBtn').textContent = P.playing ? '⏸' : '▶';
+  const up = $('#upnext');
+  const nx = p.items[P.idx+1];
+  const open = up.classList.contains('open');
+  up.innerHTML = `
+    <b>${nx ? 'Up next' : 'Last video'}</b>
+    <div class="next-line"><span>${nx ? esc(titleOf(nx)) : 'You are on the last one'}</span>
+      <button class="link" id="allBtn">${open ? 'Hide' : `All ${n}`}</button></div>
+    <div class="all">${p.items.map((x,i) => `<button data-go="${i}" class="${i===P.idx?'cur':''}"><img src="${thumb(x.id)}" alt="" loading="lazy">${i+1}. ${esc(titleOf(x))}</button>`).join('')}</div>`;
+}
+$('#upnext').onclick = e => {
+  if(e.target.closest('#allBtn')){ $('#upnext').classList.toggle('open'); renderInfo(); return; }
+  const b = e.target.closest('[data-go]'); if(b) go(+b.dataset.go, +b.dataset.go > P.idx ? 'up' : 'down');
+};
+$('#prevBtn').onclick = () => go(P.idx-1, 'down');
+$('#nextBtn').onclick = () => go(P.idx+1, 'up');
+$('#playBtn').onclick = togglePlay;
+$('#pBack').onclick = () => history.back();
+
+function onEnded(){
+  const shorts = P.pl.type === 'shorts';
+  const last = P.idx >= P.pl.items.length-1;
+  if(shorts){
+    if(!db.autoNext){ P.yt.seekTo(0); P.yt.playVideo(); return; }
+    if(!last){ go(P.idx+1, 'up'); return; }
+    showEnd(); return;
+  }
+  if(last){ showEnd(); return; }
+  // Normal videos: a short calm pause before the next one
+  let s = 5; const nx = P.pl.items[P.idx+1];
+  const ec = $('#endCard');
+  const draw = () => ec.innerHTML = `
+    <p>Next up</p><h3 style="font-size:18px;max-width:420px">${esc(titleOf(nx))}</h3>
+    <button class="round" id="ecNow" aria-label="Play next">▶</button>
+    <p>Starting in ${s}…</p>
+    <button class="btn ghost" id="ecStop">Stop here</button>`;
+  draw(); ec.classList.add('on');
+  const bind = () => { $('#ecNow').onclick = () => go(P.idx+1,'up'); $('#ecStop').onclick = () => { clearInterval(P.countdown); ec.innerHTML = `<h3>Paused ✋</h3><p>Ready when you are.</p><button class="round" id="ecGo">▶</button>`; $('#ecGo').onclick = () => go(P.idx+1,'up'); }; };
+  bind();
+  clearInterval(P.countdown);
+  P.countdown = setInterval(() => { s--; if(s<=0){ clearInterval(P.countdown); go(P.idx+1,'up'); } else { draw(); bind(); } }, 1000);
+}
+function showEnd(){
+  const ec = $('#endCard');
+  ec.innerHTML = `<div style="font-size:48px">🎉</div><h3>All done!</h3><p>You finished this playlist.</p>
+    <button class="btn primary" id="ecReplay">↺ Watch again</button>
+    ${P.kids ? '' : '<button class="btn ghost" id="ecHome">Back to playlists</button>'}`;
+  ec.classList.add('on');
+  $('#ecReplay').onclick = () => go(0, 'down');
+  const h = $('#ecHome'); if(h) h.onclick = () => history.back();
+}
+
+/* Gestures: tap = play/pause, swipe up/down = next/prev (Shorts) */
+(() => {
+  const g = $('#gesture'); let s = null;
+  g.addEventListener('pointerdown', e => { s = { x:e.clientX, y:e.clientY, t:Date.now() }; });
+  g.addEventListener('pointerup', e => {
+    if(!s) return; const dx = e.clientX - s.x, dy = e.clientY - s.y; s = null;
+    if(P.pl.type==='shorts' && Math.abs(dy) > 50 && Math.abs(dy) > Math.abs(dx)){ dy < 0 ? go(P.idx+1,'up') : go(P.idx-1,'down'); return; }
+    if(Math.abs(dx) < 14 && Math.abs(dy) < 14) togglePlay();
+  });
+  g.addEventListener('pointercancel', () => s = null);
+  let wheelLock = 0;
+  $('#stage').addEventListener('wheel', e => {
+    if(P.pl?.type !== 'shorts') return; e.preventDefault();
+    const now = Date.now(); if(now - wheelLock < 700 || Math.abs(e.deltaY) < 20) return; wheelLock = now;
+    e.deltaY > 0 ? go(P.idx+1,'up') : go(P.idx-1,'down');
+  }, { passive:false });
+  addEventListener('keydown', e => {
+    if(screen !== 'player' || $('#backdrop').classList.contains('on')) return;
+    if(e.key === ' '){ e.preventDefault(); togglePlay(); }
+    if(P.pl.type === 'shorts'){
+      if(e.key === 'ArrowDown'){ e.preventDefault(); go(P.idx+1,'up'); }
+      if(e.key === 'ArrowUp'){ e.preventDefault(); go(P.idx-1,'down'); }
+    }
+  });
+})();
+
+/* Shorts auto-next toggle */
+function renderAuto(){ const b=$('#autoBtn'); b.textContent = db.autoNext ? '⇣ Auto-next' : '↻ Loop'; b.classList.toggle('on', db.autoNext); }
+$('#autoBtn').onclick = () => { db.autoNext = !db.autoNext; save(); renderAuto(); toast(db.autoNext ? 'Goes to the next Short when one ends' : 'Each Short repeats until you swipe'); };
+
+/* ---------- KIDS MODE ---------- */
+$('#kidsBtn').onclick = () => {
+  let mins = 20;
+  const opts = [0,10,20,30,45];
+  const draw = () => {
+    openSheet(`<h2>🧸 Kids mode</h2>
+      <p>Hides the exit and video titles, blocks YouTube links, lowers the volume, and needs a grown-up to <b>hold the lock for 3 seconds</b> to leave.</p>
+      <div style="font-weight:800;margin-bottom:8px">Watch time limit</div>
+      <div class="chips">${opts.map(m => `<button class="chip ${m===mins?'on':''}" data-m="${m}">${m ? m+' min' : 'No limit'}</button>`).join('')}</div>
+      <div class="row"><button class="btn ghost" id="kNo">Cancel</button><button class="btn primary" id="kGo">Start Kids mode</button></div>`);
+    $('#sheet').querySelectorAll('[data-m]').forEach(b => b.onclick = () => { mins = +b.dataset.m; draw(); });
+    $('#kNo').onclick = closeSheet;
+    $('#kGo').onclick = () => { closeSheet(); enterKids(mins); };
+  };
+  draw();
+};
+function curTime(){ try{ return P.yt && P.yt.getCurrentTime ? P.yt.getCurrentTime() : 0; }catch(e){ return 0; } }
+function enterKids(mins){
+  db.kids = { active:true, plId:P.pl.id, limit: mins*60, used:0 }; save();
+  P.kids = true; $('#player').classList.add('kidson');
+  $('#upnext').classList.remove('open');
+  buildPlayer(curTime()); renderTime();
+}
+function exitKids(){
+  db.kids = null; save(); P.kids = false;
+  $('#player').classList.remove('kidson'); $('#breakCard').classList.remove('on');
+  buildPlayer(curTime()); renderInfo();
+  toast('Kids mode off');
+}
+function startTick(){
+  clearInterval(P.tick);
+  renderTime();
+  let n = 0;
+  P.tick = setInterval(() => {
+    if(!P.kids || !db.kids) return;
+    if(P.playing){ db.kids.used++; if(++n % 5 === 0) save(); }
+    if(db.kids.limit && db.kids.used >= db.kids.limit && !$('#breakCard').classList.contains('on')){
+      save(); $('#breakCard').classList.add('on'); try{ P.yt.pauseVideo(); }catch(e){}
+    }
+    renderTime();
+  }, 1000);
+}
+function renderTime(){
+  const el = $('#timeLeft');
+  if(!db.kids || !db.kids.limit){ el.textContent = '🧸 Kids'; return; }
+  const left = Math.max(0, db.kids.limit - db.kids.used);
+  el.textContent = `⏱ ${Math.ceil(left/60)} min`;
+}
+/* Hold-to-unlock (3 s) */
+(() => {
+  const b = $('#lockBtn'); let raf = null, t0 = 0;
+  const HOLD = 3000;
+  const stop = () => { cancelAnimationFrame(raf); raf = null; b.style.setProperty('--p', 0); };
+  const step = () => {
+    const p = (Date.now() - t0) / HOLD; b.style.setProperty('--p', Math.min(p,1));
+    if(p >= 1){ stop(); grownUp(); return; }
+    raf = requestAnimationFrame(step);
+  };
+  b.addEventListener('pointerdown', e => { e.preventDefault(); t0 = Date.now(); raf = requestAnimationFrame(step); });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, stop));
+  b.addEventListener('contextmenu', e => e.preventDefault());
+})();
+function grownUp(){
+  const timed = db.kids && db.kids.limit;
+  openSheet(`<h2>Grown-up options</h2><p>Kids mode is still on until you choose.</p>
+    ${timed ? '<button class="btn ghost big" id="gMore" style="margin-bottom:10px">＋ 10 more minutes</button>' : ''}
+    <button class="btn primary big" id="gExit">Turn off Kids mode</button>
+    <div class="row"><button class="btn ghost" id="gNo" style="flex:1">Cancel</button></div>`);
+  $('#gNo').onclick = closeSheet;
+  $('#gExit').onclick = () => { closeSheet(); exitKids(); };
+  const m = $('#gMore'); if(m) m.onclick = () => {
+    db.kids.limit = db.kids.used + 600; save(); closeSheet();
+    $('#breakCard').classList.remove('on'); renderTime();
+    try{ P.yt.playVideo(); }catch(e){}
+  };
+}
+
+/* ---------- start ---------- */
+load();
+dirty = new Set(db.dirty || []); gone = new Set(db.gone || []);
+history.replaceState({screen:'home'}, '');
+renderHome();
+if(db.kids && db.kids.active){
+  const p = getPl(db.kids.plId);
+  if(p && p.items.length) openPlayer(p.id); else { db.kids = null; save(); }
+}
+pull();
+</script>
+</body>
+</html>
