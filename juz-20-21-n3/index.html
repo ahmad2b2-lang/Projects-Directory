@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="only light">
+<meta name="theme-color" content="#f7f1e3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="الجزآن ٢٠–٢١">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>ورد الجزأين ٢٠ و٢١</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/hafs.18.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face {
+    font-family: "KFGQPC Hafs";
+    src: url("fonts/hafs.18.woff2") format("woff2");
+    font-display: block;
+  }
+  :root {
+    color-scheme: only light;
+    --paper: #f7f1e3;
+    --page: #fffdf7;
+    --ink: #1d2a24;
+    --muted: #6c6a5e;
+    --green: #1f5d4c;
+    --green-dark: #164638;
+    --green-soft: #e3ede7;
+    --gold: #b08a3e;
+    --gold-soft: #efe3c6;
+    --line: #e4dac3;
+    --danger: #a33a2e;
+    --quran-size: 26px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); }
+
+  /* ---------- Behave like an app, not a web page ---------- */
+  html {
+    -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+    overscroll-behavior: none;            /* no pull-to-refresh / rubber band */
+  }
+  body {
+    -webkit-user-select: none; user-select: none;   /* no text selection */
+    -webkit-touch-callout: none;                    /* no long-press menu (iOS) */
+    touch-action: manipulation;                     /* no double-tap zoom */
+    overscroll-behavior: none;
+  }
+  * { touch-action: manipulation; -webkit-user-drag: none; }
+  input { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+  button { -webkit-appearance: none; appearance: none; }
+  button:focus:not(:focus-visible) { outline: none; }
+
+  /* ---------- Install banner ---------- */
+  .install {
+    display: flex; align-items: center; gap: 12px; margin-top: calc(10px + env(safe-area-inset-top));
+    background: var(--green); color: #fff; border: 0; border-radius: 14px; width: 100%;
+    padding: 10px 14px; cursor: pointer; text-align: start; font-size: 15px;
+  }
+  .install img { width: 34px; height: 34px; border-radius: 9px; flex: none; }
+  .install b { display: block; font-size: 16px; }
+  .install span { opacity: .85; font-size: 13px; }
+  .install .go { margin-inline-start: auto; background: var(--gold-soft); color: var(--green-dark); border-radius: 999px; padding: 5px 14px; font-weight: 700; font-size: 14px; flex: none; }
+  .steps { text-align: start; margin: 0 0 18px; padding: 0; list-style: none; counter-reset: s; }
+  .steps li { counter-increment: s; display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 16px; }
+  .steps li::before { content: counter(s, arabic-indic); flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--green-soft); color: var(--green-dark); display: grid; place-items: center; font-weight: 700; }
+  .steps .ico { display: inline-block; border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; background: #fff; font-size: 15px; }
+  body {
+    font-family: "Noto Naskh Arabic", "Segoe UI", Tahoma, sans-serif;
+    font-size: 17px; line-height: 1.6;
+    min-height: 100dvh;
+  }
+  button, input { font: inherit; }
+  [hidden] { display: none !important; }
+
+  .screen { min-height: 100dvh; display: flex; flex-direction: column; }
+  .wrap { width: 100%; max-width: 520px; margin: 0 auto; padding: 0 16px; }
+
+  /* ---------- Shared bits ---------- */
+  .brand { text-align: center; padding: 48px 0 20px; }
+  .brand .mark {
+    width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 18px;
+    background: var(--green); color: var(--gold-soft);
+    display: grid; place-items: center; font-family: "KFGQPC Hafs", serif; font-size: 34px;
+    box-shadow: 0 6px 18px rgba(31,93,76,.22);
+  }
+  .brand h1 { margin: 0; font-size: 26px; color: var(--green-dark); }
+  .brand p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+
+  .card {
+    background: var(--page); border: 1px solid var(--line); border-radius: 18px;
+    padding: 20px; box-shadow: 0 2px 10px rgba(80,60,20,.06);
+  }
+  .btn {
+    display: block; width: 100%; border: 0; border-radius: 14px; cursor: pointer;
+    padding: 14px 18px; font-size: 18px; font-weight: 700;
+    background: var(--green); color: #fff; transition: background .15s, opacity .15s;
+  }
+  .btn:active { background: var(--green-dark); }
+  .btn[disabled] { opacity: .55; cursor: default; }
+  .btn.locked, .btn.locked[disabled] { background: #c8c4b8; color: #fff; opacity: 1; transition: background .25s; }
+  .btn.ghost { background: transparent; color: var(--green); border: 1.5px solid var(--green); }
+  .link {
+    background: none; border: 0; color: var(--green); cursor: pointer; padding: 8px;
+    font-size: 15px; text-decoration: underline; text-underline-offset: 4px;
+  }
+  .error { color: var(--danger); font-size: 15px; min-height: 24px; margin: 8px 0 0; text-align: center; }
+
+  /* ---------- Form fields ---------- */
+  label { display: block; font-size: 15px; color: var(--muted); margin: 0 0 6px; }
+  .field { margin-bottom: 14px; }
+  .field input {
+    width: 100%; padding: 13px 14px; border-radius: 12px; border: 1.5px solid var(--line);
+    background: #fff; color: var(--ink); font-size: 17px; outline: none;
+  }
+  .field input:focus { border-color: var(--green); }
+
+  /* ---------- Home ---------- */
+  .home-top { display: flex; justify-content: space-between; align-items: center; padding: 18px 0 6px; }
+  .install[hidden] + .home-top { padding-top: calc(18px + env(safe-area-inset-top)); }
+  .home-top { justify-content: center; }
+  .home-top .hello { font-size: 18px; font-weight: 600; color: var(--green-dark); }
+  .next-card { text-align: center; margin-top: 18px; }
+  .next-card .label { color: var(--muted); font-size: 15px; }
+  .next-card .page-no { font-size: 56px; font-weight: 700; color: var(--green); line-height: 1.2; }
+  .next-card .surah { font-family: "KFGQPC Hafs", serif; font-size: 26px; color: var(--ink); }
+  .next-card .juz { color: var(--muted); font-size: 15px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0 22px; }
+  .stat { text-align: center; padding: 14px 10px; }
+  .stat b { display: block; font-size: 24px; color: var(--gold); }
+  .stat span { font-size: 14px; color: var(--muted); }
+  .note { text-align: center; color: var(--muted); font-size: 15px; margin: 14px 0 0; }
+  .advanced-btn { display: block; margin: 12px auto 24px; font-size: 15px; color: var(--muted); }
+  .reminder {
+    display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 14px; padding: 12px 14px;
+    text-align: start; cursor: pointer; color: var(--ink); font: inherit;
+  }
+  .reminder .r-ico { font-size: 22px; flex: none; filter: grayscale(1); opacity: .6; transition: .2s; }
+  .reminder .r-text { flex: 1; min-width: 0; }
+  .reminder .r-text b { display: block; font-size: 16px; color: var(--green-dark); }
+  .reminder .r-text span { display: block; font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .switch { flex: none; width: 50px; height: 30px; border-radius: 999px; background: #d9d4c6; position: relative; transition: background .2s; }
+  .switch i { position: absolute; top: 3px; right: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: right .2s; }
+  .reminder[aria-checked="true"] .switch { background: var(--green); }
+  .reminder[aria-checked="true"] .switch i { right: 23px; }
+  .reminder[aria-checked="true"] .r-ico { filter: none; opacity: 1; }
+  .reminder.busy { opacity: .6; pointer-events: none; }
+  .adv-field { text-align: start; margin-bottom: 10px; }
+  .adv-field input { text-align: center; font-size: 26px; font-weight: 700; letter-spacing: 2px; direction: ltr; padding: 10px; }
+  .adv-preview {
+    min-height: 74px; margin-bottom: 16px; padding: 10px 12px; border-radius: 12px;
+    background: var(--green-soft); color: var(--green-dark); font-size: 15px; line-height: 1.7;
+  }
+  .adv-preview:empty { background: transparent; }
+  .adv-preview .s { font-family: "KFGQPC Hafs", serif; font-size: 20px; }
+  .adv-preview.err { background: #f6e3df; color: var(--danger); }
+
+  /* ---------- Popup ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(29,42,36,.45); z-index: 50;
+    display: flex; align-items: flex-end; justify-content: center; padding: 16px;
+    animation: fade .2s ease;
+  }
+  @media (min-width: 560px) { .overlay { align-items: center; } }
+  .sheet {
+    width: 100%; max-width: 440px; background: var(--page); border-radius: 22px;
+    padding: 24px 20px calc(20px + env(safe-area-inset-bottom)); text-align: center;
+    animation: rise .25s ease;
+  }
+  .sheet h2 { margin: 0 0 4px; font-size: 21px; color: var(--green-dark); }
+  .sheet p { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+  .stepper { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 14px; }
+  .stepper button {
+    width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid var(--green);
+    background: #fff; color: var(--green); font-size: 28px; line-height: 1; cursor: pointer;
+  }
+  .stepper button[disabled] { opacity: .35; }
+  .stepper output { min-width: 84px; font-size: 44px; font-weight: 700; color: var(--green); }
+  .chips { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .chips button {
+    border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 16px;
+    color: var(--ink); cursor: pointer; font-size: 15px;
+  }
+  .chips button.on { background: var(--green-soft); border-color: var(--green); color: var(--green-dark); font-weight: 600; }
+  .sheet .link { margin-top: 6px; }
+  @keyframes fade { from { opacity: 0 } }
+  @keyframes rise { from { transform: translateY(24px); opacity: 0 } }
+
+  /* ---------- Reader ---------- */
+  .reader-bar {
+    position: sticky; top: 0; z-index: 10; background: var(--paper);
+    padding: calc(8px + env(safe-area-inset-top)) 0 8px; border-bottom: 1px solid var(--line);
+  }
+  .reader-bar .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .icon-btn {
+    width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--page);
+    color: var(--green-dark); cursor: pointer; font-size: 16px; font-weight: 700;
+  }
+  .session-label { font-size: 15px; color: var(--green-dark); font-weight: 600; }
+  .bar { height: 4px; background: var(--line); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--gold); width: 0; transition: width .3s; }
+
+  .mushaf {
+    background: var(--page); margin: 14px 0 120px; border-radius: 6px; position: relative;
+    border: 1px solid var(--gold); outline: 1px solid var(--gold); outline-offset: 4px;
+    padding: 12px 14px 10px;
+  }
+  .mushaf-head {
+    display: flex; justify-content: space-between; font-family: "KFGQPC Hafs", serif;
+    font-size: 17px; color: var(--green-dark); border-bottom: 1px solid var(--gold-soft); padding-bottom: 6px;
+  }
+  /* Regular font for the juz number: the Quran font draws digits as ayah markers */
+  .mushaf-head .plain { font-family: "Noto Naskh Arabic", "Segoe UI", Tahoma, sans-serif; font-size: 15px; }
+  .mushaf-text {
+    font-family: "KFGQPC Hafs", serif; font-size: var(--quran-size); line-height: 2.05;
+    text-align: justify; text-align-last: center; color: #111; padding: 10px 2px 4px;
+    word-spacing: 1px;
+  }
+  .mushaf-text.centered { text-align: center; }
+  .aya { white-space: normal; }
+  .surah-title {
+    display: block; margin: 10px 0 6px; padding: 6px 0; text-align: center;
+    border: 1px solid var(--gold); border-radius: 6px; background: var(--gold-soft);
+    font-size: calc(var(--quran-size) * .85); color: var(--green-dark); line-height: 1.8;
+  }
+  .basmala { display: block; text-align: center; margin: 2px 0 4px; }
+  .mushaf-foot { text-align: center; font-size: 15px; color: var(--muted); border-top: 1px solid var(--gold-soft); padding-top: 4px; }
+
+  .reader-actions {
+    position: fixed; inset: auto 0 0 0; z-index: 10;
+    background: linear-gradient(to top, var(--paper) 70%, rgba(247,241,227,0));
+    padding: 22px 0 calc(14px + env(safe-area-inset-bottom));
+  }
+  .loading { text-align: center; color: var(--muted); padding: 60px 0; }
+
+  /* ---------- Done ---------- */
+  .done { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 32px 0; }
+  .done .mark { font-size: 54px; margin-bottom: 4px; }
+  .done h2 { margin: 0; font-size: 30px; color: var(--green); font-family: "KFGQPC Hafs", serif; font-weight: normal; }
+  .done p { color: var(--muted); margin: 8px 0 26px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 99;
+    background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 15px;
+    max-width: calc(100% - 32px); text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<section id="s-boot" class="screen"><div class="loading">…جارٍ التحميل</div></section>
+
+<!-- Main page -->
+<section id="s-home" class="screen" hidden>
+  <div class="wrap">
+    <button class="install" id="install" type="button" hidden>
+      <img src="icons/icon-192.png" alt="">
+      <div><b>ثبّت التطبيق</b><span>أضِفه إلى الشاشة الرئيسية لهاتفك</span></div>
+      <div class="go">تثبيت</div>
+    </button>
+    <div class="home-top">
+      <div class="hello">ورد الجزأين ٢٠ و٢١</div>
+    </div>
+    <div class="card next-card">
+      <div class="label">صفحتك التالية</div>
+      <div class="page-no" id="h-page"></div>
+      <div class="surah" id="h-surah"></div>
+      <div class="juz" id="h-juz"></div>
+    </div>
+    <div class="stats">
+      <div class="card stat"><b id="h-read">٠</b><span>صفحات مقروءة</span></div>
+      <div class="card stat"><b id="h-reads">٠</b><span>قراءات كاملة للجزأين</span></div>
+    </div>
+    <button class="btn" id="start" type="button">ابدأ جلسة قراءة</button>
+    <button class="card reminder" id="reminder" type="button" role="switch" aria-checked="false">
+      <span class="r-ico" aria-hidden="true">🔔</span>
+      <span class="r-text"><b>التذكير اليومي</b><span id="reminder-sub">إشعار الساعة ٨:٣٠ مساءً إن لم تقرأ في يومك</span></span>
+      <span class="switch" aria-hidden="true"><i></i></span>
+    </button>
+    <button class="link advanced-btn" id="advanced" type="button">متقدم</button>
+  </div>
+</section>
+
+<!-- Reader -->
+<section id="s-reader" class="screen" hidden>
+  <div class="reader-bar">
+    <div class="wrap">
+      <div class="row">
+        <button class="icon-btn" id="end-early" type="button" aria-label="إنهاء الجلسة">✕</button>
+        <div class="session-label" id="r-label"></div>
+        <div style="display:flex;gap:6px">
+          <button class="icon-btn" id="fs-down" type="button" aria-label="تصغير الخط">−</button>
+          <button class="icon-btn" id="fs-up" type="button" aria-label="تكبير الخط">+</button>
+        </div>
+      </div>
+      <div class="bar"><i id="r-bar"></i></div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="mushaf" id="mushaf">
+      <div class="loading">…جارٍ التحميل</div>
+    </div>
+  </div>
+  <div class="reader-actions">
+    <div class="wrap"><button class="btn" id="next" type="button">أتممتُ هذه الصفحة</button></div>
+  </div>
+</section>
+
+<!-- Session complete -->
+<section id="s-done" class="screen" hidden>
+  <div class="wrap done">
+    <div class="mark">🌿</div>
+    <h2 id="d-title">تقبَّل الله منك</h2>
+    <p id="d-text"></p>
+    <button class="btn ghost" id="back-home" type="button">العودة إلى الصفحة الرئيسية</button>
+  </div>
+</section>
+
+<!-- How many pages popup -->
+<div class="overlay" id="popup" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pp-title">
+    <h2 id="pp-title">كم صفحة ستقرأ في هذه الجلسة؟</h2>
+    <p id="pp-sub"></p>
+    <div class="stepper">
+      <button type="button" id="pp-minus" aria-label="إنقاص">−</button>
+      <output id="pp-count">١</output>
+      <button type="button" id="pp-plus" aria-label="زيادة">+</button>
+    </div>
+    <div class="chips" id="pp-chips"></div>
+    <button class="btn" id="pp-go" type="button">ابدأ القراءة</button>
+    <button class="link" id="pp-cancel" type="button">ليس الآن</button>
+  </div>
+</div>
+
+<!-- Advanced: mark pages read outside the app -->
+<div class="overlay" id="adv" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="adv-title">
+    <h2 id="adv-title">قرأتُ صفحات خارج التطبيق</h2>
+    <p id="adv-sub"></p>
+    <div class="field adv-field">
+      <label for="adv-page">آخر صفحة أتممتها</label>
+      <input id="adv-page" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" enterkeyhint="done">
+    </div>
+    <div class="adv-preview" id="adv-preview" aria-live="polite"></div>
+    <button class="btn" id="adv-save" type="button" disabled>تحديث تقدّمي</button>
+    <button class="link" id="adv-cancel" type="button">إلغاء</button>
+  </div>
+</div>
+
+<!-- End session early -->
+<div class="overlay" id="end-ask" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ea-title">
+    <h2 id="ea-title">إنهاء الجلسة الآن؟</h2>
+    <p>سيُحفظ تقدّمك حتى آخر صفحة أتممتها.</p>
+    <button class="btn" id="ea-yes" type="button">إنهاء الجلسة</button>
+    <button class="link" id="ea-no" type="button">متابعة القراءة</button>
+  </div>
+</div>
+
+<!-- Manual install steps (iPhone, or browsers without an install prompt) -->
+<div class="overlay" id="install-help" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ih-title">
+    <h2 id="ih-title">إضافة التطبيق إلى الشاشة الرئيسية</h2>
+    <p id="ih-sub"></p>
+    <ol class="steps" id="ih-steps"></ol>
+    <button class="btn" id="ih-ok" type="button">حسنًا</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  // ---------- Settings ----------
+  const SUPABASE_URL = "https://bhfgwlkzkbwcwyoypwhy.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_9YylflVQca-62NHsBKSTeA_GY896nj3";
+  const FIRST_PAGE = 382;   // start of Part 20 (An-Naml 27:56)
+  const LAST_PAGE = 421;    // end of Part 21 (Al-Ahzab 33:30)
+  const TOTAL = LAST_PAGE - FIRST_PAGE + 1;
+  const MAX_SESSION = 20;
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+
+  // ---------- Helpers ----------
+  const $ = (id) => document.getElementById(id);
+  const ar = (n) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+  };
+  const screens = ["s-boot", "s-home", "s-reader", "s-done"];
+  function show(id) { screens.forEach((s) => ($(s).hidden = s !== id)); window.scrollTo(0, 0); }
+  let toastTimer;
+  function toast(msg) {
+    const t = $("toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 3200);
+  }
+
+  // ---------- This device's private key (no login) ----------
+  function newKey() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+    const h = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  }
+  let KEY = store.get("juz2021.key", null);
+  if (!KEY) { KEY = newKey(); store.set("juz2021.key", KEY); }
+
+  // ---------- Page data ----------
+  const pageCache = new Map();
+  function loadPage(n) {
+    if (!pageCache.has(n)) {
+      const p = fetch(`pages/${n}.json`).then((r) => { if (!r.ok) throw new Error("page"); return r.json(); });
+      p.catch(() => pageCache.delete(n));
+      pageCache.set(n, p);
+    }
+    return pageCache.get(n);
+  }
+
+  // ---------- State ----------
+  let reader = null;          // { current_page, pages_read, reads, push_endpoint }
+  let session = null;         // { goal, done }
+  let busy = false;
+
+  async function fetchReader() {
+    const { data, error } = await sb.rpc("juz2021_get", { p_key: KEY });
+    if (error || !data) throw error || new Error("load");
+    return data;
+  }
+
+  // ---------- Home ----------
+  async function renderHome() {
+    const p = reader.current_page;
+    $("h-page").textContent = ar(p);
+    $("h-read").textContent = ar(reader.pages_read);
+    $("h-reads").textContent = ar(reader.reads);
+    $("h-surah").textContent = ""; $("h-juz").textContent = "";
+    try {
+      const d = await loadPage(p);
+      $("h-surah").textContent = "سورة " + d.surahs[0];
+      $("h-juz").textContent = `الجزء ${ar(d.juz)} · الصفحة ${ar(p - FIRST_PAGE + 1)} من ${ar(TOTAL)}`;
+    } catch {}
+  }
+
+  async function enterApp(openPopup) {
+    show("s-boot");
+    for (;;) {
+      try { reader = await fetchReader(); break; }
+      catch {
+        $("s-boot").firstElementChild.textContent = "تعذّر تحميل تقدّمك، تحقق من الاتصال… سنحاول مجددًا";
+        await new Promise((r) => setTimeout(r, 4000));
+      }
+    }
+    await renderHome();
+    show("s-home");
+    refreshReminder();
+    if (openPopup) openSessionPopup();
+  }
+
+  // ---------- "How many pages" popup ----------
+  let ppCount = 1;
+  // A session can run past the end of Part 21 only up to the end; the next one restarts at Part 20.
+  function maxForSession() { return Math.max(1, Math.min(MAX_SESSION, LAST_PAGE - reader.current_page + 1)); }
+  function setCount(n) {
+    const max = maxForSession();
+    ppCount = Math.min(Math.max(1, n), max);
+    $("pp-count").textContent = ar(ppCount);
+    $("pp-minus").disabled = ppCount <= 1;
+    $("pp-plus").disabled = ppCount >= max;
+    [...$("pp-chips").children].forEach((c) => c.classList.toggle("on", +c.dataset.n === ppCount));
+  }
+  function openSessionPopup() {
+    const max = maxForSession();
+    $("pp-sub").textContent = `تبدأ من الصفحة ${ar(reader.current_page)}`;
+    $("pp-chips").innerHTML = "";
+    [1, 2, 5, 10].filter((n) => n <= max).forEach((n) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.dataset.n = n; b.textContent = n === 1 ? "صفحة" : n === 2 ? "صفحتان" : `${ar(n)} صفحات`;
+      b.onclick = () => setCount(n);
+      $("pp-chips").appendChild(b);
+    });
+    setCount(1);
+    $("popup").hidden = false;
+  }
+  $("pp-plus").onclick = () => setCount(ppCount + 1);
+  $("pp-minus").onclick = () => setCount(ppCount - 1);
+  $("pp-cancel").onclick = () => ($("popup").hidden = true);
+  $("start").onclick = openSessionPopup;
+  $("pp-go").onclick = () => {
+    $("popup").hidden = true;
+    session = { goal: ppCount, done: 0 };
+    show("s-reader");
+    renderReader();
+  };
+
+  // ---------- Advanced: mark pages read outside the app ----------
+  let advTarget = null, advSeq = 0, advBusy = false;
+  const toLatin = (s) => s.replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+  function advMessage(html, err) {
+    const p = $("adv-preview");
+    p.classList.toggle("err", !!err);
+    p.innerHTML = html;
+  }
+  async function advUpdate() {
+    const seq = ++advSeq;
+    const raw = toLatin($("adv-page").value).replace(/\D/g, "");
+    if ($("adv-page").value !== raw) $("adv-page").value = raw;
+    advTarget = null; $("adv-save").disabled = true;
+    const from = reader.current_page;
+    if (!raw) { advMessage(""); return; }
+    const n = +raw;
+    if (n < FIRST_PAGE || n > LAST_PAGE) { advMessage(`أدخل رقم صفحة من ${ar(FIRST_PAGE)} إلى ${ar(LAST_PAGE)}`, true); return; }
+    if (n < from) { advMessage(`تقدّمك الحالي عند الصفحة ${ar(from)} بالفعل. أدخل الصفحة ${ar(from)} أو ما بعدها.`, true); return; }
+    let d;
+    try { d = await loadPage(n); } catch { if (seq === advSeq) advMessage("تعذّر التحميل، تحقق من الاتصال", true); return; }
+    if (seq !== advSeq) return;
+    const count = n - from + 1;
+    const countWord = count === 1 ? "صفحة واحدة" : count === 2 ? "صفحتان" : `${ar(count)} صفحة`;
+    const where = `<span class="s">سورة ${d.surahs[d.surahs.length - 1]}</span>، الجزء ${ar(d.juz)}`;
+    const after = n >= LAST_PAGE
+      ? "وبذلك تُتمّ قراءة الجزأين، وتبدأ قراءتك التالية من أول الجزء العشرين."
+      : `وتبدأ قراءتك التالية من الصفحة ${ar(n + 1)}.`;
+    advMessage(`الصفحة ${ar(n)}: ${where}<br>سيُسجَّل من ${ar(from)} إلى ${ar(n)} (${countWord}) كمقروء، ${after}`);
+    advTarget = n; $("adv-save").disabled = false;
+  }
+  function openAdvanced() {
+    $("adv-sub").textContent = `حدّد آخر صفحة أتممتها (من ${ar(FIRST_PAGE)} إلى ${ar(LAST_PAGE)})، وسيتقدّم وِردك إلى ما بعدها. تقدّمك الحالي: الصفحة ${ar(reader.current_page)}.`;
+    $("adv-page").value = ""; advMessage(""); advTarget = null; $("adv-save").disabled = true;
+    $("adv").hidden = false;
+    setTimeout(() => $("adv-page").focus(), 50);
+  }
+  $("advanced").onclick = openAdvanced;
+  $("adv-cancel").onclick = () => ($("adv").hidden = true);
+  $("adv-page").addEventListener("input", advUpdate);
+  $("adv-page").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("adv-page").blur(); } });
+  $("adv-save").onclick = async () => {
+    if (advBusy || advTarget === null) return;
+    advBusy = true; $("adv-save").disabled = true;
+    const before = reader.reads;
+    try {
+      const { data, error } = await sb.rpc("juz2021_mark_read_through", { p_key: KEY, p_from: reader.current_page, p_through: advTarget });
+      if (error || !data) throw error || new Error("save");
+      reader = data;
+      $("adv").hidden = true;
+      await renderHome();
+      toast(reader.reads > before ? "مبارك إتمام قراءة الجزأين، تقبَّل الله منك" : `تم تحديث تقدّمك. صفحتك التالية ${ar(reader.current_page)}`);
+    } catch {
+      try { reader = await fetchReader(); await renderHome(); } catch {}
+      await advUpdate();
+      toast("لم يُحفظ التحديث، تحقق من الاتصال وحاول مرة أخرى");
+    } finally {
+      advBusy = false;
+    }
+  };
+
+  // ---------- Reader ----------
+  const BASMALA = "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ";
+  function applyFontSize() { document.documentElement.style.setProperty("--quran-size", store.get("juz2021.fs", "26") + "px"); }
+  function changeFont(delta) {
+    const v = Math.min(40, Math.max(18, +store.get("juz2021.fs", "26") + delta));
+    store.set("juz2021.fs", String(v)); applyFontSize();
+    requestAnimationFrame(updateNext);
+  }
+
+  // The next/finish button stays grey until the reader has scrolled to the end of the page.
+  let reachedBottom = false, guardDone = false;
+  function atBottom() {
+    const foot = document.querySelector("#mushaf .mushaf-foot");
+    if (!foot) return false;
+    return foot.getBoundingClientRect().bottom <= $("next").getBoundingClientRect().top + 8;
+  }
+  function updateNext() {
+    const b = $("next");
+    if ($("s-reader").hidden || b.dataset.retry) return;
+    if (!reachedBottom && atBottom()) reachedBottom = true;
+    b.classList.toggle("locked", !reachedBottom);
+    b.disabled = !(reachedBottom && guardDone) || busy;
+  }
+  window.addEventListener("scroll", updateNext, { passive: true });
+  window.addEventListener("resize", updateNext);
+  $("fs-up").onclick = () => changeFont(2);
+  $("fs-down").onclick = () => changeFont(-2);
+  applyFontSize();
+
+  function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  async function renderReader() {
+    const n = reader.current_page;
+    const step = session.done + 1;
+    $("r-label").textContent = `الصفحة ${ar(step)} من ${ar(session.goal)}`;
+    $("r-bar").style.width = `${(session.done / session.goal) * 100}%`;
+    $("next").textContent = step === session.goal ? "أتممتُ الجلسة" : "أتممتُ هذه الصفحة";
+    $("next").disabled = true;
+    $("next").classList.add("locked");
+    reachedBottom = false; guardDone = false;
+
+    const box = $("mushaf");
+    box.innerHTML = ""; box.appendChild(el("div", "loading", "…جارٍ التحميل"));
+    let d;
+    try { d = await loadPage(n); }
+    catch { box.innerHTML = ""; box.appendChild(el("div", "loading", "تعذّر تحميل الصفحة، تحقق من الاتصال")); $("next").disabled = false; $("next").classList.remove("locked"); $("next").textContent = "إعادة المحاولة"; $("next").dataset.retry = "1"; return; }
+    delete $("next").dataset.retry;
+
+    box.innerHTML = "";
+    const head = el("div", "mushaf-head");
+    head.appendChild(el("span", null, "سورة " + d.surahs[0]));
+    head.appendChild(el("span", "plain", "الجزء " + ar(d.juz)));
+    const text = el("div", "mushaf-text");
+    for (const a of d.ayat) {
+      if (a.a === 1) {
+        text.appendChild(el("span", "surah-title", "سورة " + a.n));
+        if (a.s !== 1 && a.s !== 9) text.appendChild(el("span", "basmala", BASMALA));
+      }
+      text.appendChild(el("span", "aya", a.t));
+      text.appendChild(document.createTextNode(" "));
+    }
+    box.append(head, text, el("div", "mushaf-foot", ar(n)));
+    window.scrollTo(0, 0);
+    loadPage(n < LAST_PAGE ? n + 1 : FIRST_PAGE).catch(() => {});
+    // Short pages may fit on screen without scrolling: check once the Quran font has laid out.
+    document.fonts.ready.then(() => requestAnimationFrame(updateNext));
+    setTimeout(() => { guardDone = true; updateNext(); }, 700); // also guards against an accidental double tap
+  }
+
+  $("next").onclick = async () => {
+    if (busy) return;
+    if ($("next").dataset.retry) { renderReader(); return; }
+    busy = true; $("next").disabled = true;
+    const page = reader.current_page;
+    try {
+      const { data, error } = await sb.rpc("juz2021_complete_page", { p_key: KEY, p_page: page });
+      if (error || !data) throw error || new Error("save");
+      const finishedRead = data.reads > reader.reads;
+      reader = data;
+      session.done++;
+      if (finishedRead) finishSession(true);   // end the session at the end of Part 21
+      else if (session.done >= session.goal) finishSession();
+      else renderReader();
+    } catch {
+      toast("لم يُحفظ التقدّم، تحقق من الاتصال ثم حاول مرة أخرى");
+      $("next").disabled = false;
+    } finally {
+      busy = false;
+    }
+  };
+
+  $("end-early").onclick = () => ($("end-ask").hidden = false);
+  $("ea-no").onclick = () => ($("end-ask").hidden = true);
+  $("ea-yes").onclick = async () => {
+    $("end-ask").hidden = true;
+    session = null;
+    await renderHome();
+    show("s-home");
+  };
+
+  function finishSession(done = false) {
+    const n = session.done;
+    const pagesWord = n === 1 ? "صفحة واحدة" : n === 2 ? "صفحتين" : `${ar(n)} صفحات`;
+    $("d-title").textContent = done ? "مبارك إتمام الجزأين" : "تقبَّل الله منك";
+    $("d-text").textContent = done
+      ? `أتممت قراءة الجزأين العشرين والحادي والعشرين، وهذه قراءتك رقم ${ar(reader.reads)}. تقبَّل الله منك، وقراءتك التالية تبدأ من أول الجزء العشرين.`
+      : `قرأت ${pagesWord} في هذه الجلسة. وِردك القادم يبدأ من الصفحة ${ar(reader.current_page)}.`;
+    session = null;
+    show("s-done");
+  }
+  $("back-home").onclick = async () => { await renderHome(); show("s-home"); };
+
+  // ---------- App-like behaviour ----------
+  const isInput = (t) => t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
+  document.addEventListener("contextmenu", (e) => { if (!isInput(e.target)) e.preventDefault(); });
+  document.addEventListener("selectstart", (e) => { if (!isInput(e.target)) e.preventDefault(); });
+  document.addEventListener("dragstart", (e) => e.preventDefault());
+  // iOS Safari ignores user-scalable=no, so block pinch-zoom directly.
+  ["gesturestart", "gesturechange", "gestureend"].forEach((t) => document.addEventListener(t, (e) => e.preventDefault(), { passive: false }));
+  document.addEventListener("touchmove", (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+
+  // ---------- Install to home screen ----------
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  let installPrompt = null;
+
+  function updateInstallButton() { $("install").hidden = isStandalone(); }
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installPrompt = e; updateInstallButton(); });
+  window.addEventListener("appinstalled", () => { installPrompt = null; $("install").hidden = true; toast("تم تثبيت التطبيق على هاتفك"); });
+
+  function showInstallHelp() {
+    const steps = isIOS
+      ? ["اضغط زر المشاركة <span class=\"ico\">⬆︎</span> في أسفل أو أعلى المتصفح",
+         "اختر «إضافة إلى الشاشة الرئيسية»",
+         "اضغط «إضافة»، وسيظهر التطبيق بين تطبيقاتك"]
+      : ["افتح قائمة المتصفح <span class=\"ico\">⋮</span>",
+         "اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»",
+         "اضغط «تثبيت»، وسيظهر التطبيق بين تطبيقاتك"];
+    $("ih-sub").textContent = isIOS && !/Safari/.test(ua) ? "يعمل هذا بأفضل شكل من متصفح Safari" : "خطوات سريعة:";
+    $("ih-steps").innerHTML = steps.map((s) => `<li><div>${s}</div></li>`).join("");
+    $("install-help").hidden = false;
+  }
+  $("ih-ok").onclick = () => ($("install-help").hidden = true);
+  $("install").onclick = async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      const { outcome } = await installPrompt.userChoice.catch(() => ({}));
+      installPrompt = null;
+      if (outcome !== "accepted") updateInstallButton();
+    } else {
+      showInstallHelp();
+    }
+  };
+  updateInstallButton();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+
+  // ---------- Daily reminder (push notification at 8:30 pm if nothing was read that day) ----------
+  const VAPID_PUBLIC_KEY = "BJjEDU5r5JGrdohixiNrYZMPpK2mcQwN6vrXPnIg7EPqs6L9Fhy6kqXQMqtO-sxknc-Xr2rcTaGYKLEW-ja5Yuw";
+  const pushSupported = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  const b64ToBytes = (s) => {
+    const pad = "=".repeat((4 - (s.length % 4)) % 4);
+    const raw = atob((s + pad).replace(/-/g, "+").replace(/_/g, "/"));
+    return Uint8Array.from(raw, (c) => c.charCodeAt(0));
+  };
+  function setReminderUI(on) {
+    $("reminder").setAttribute("aria-checked", on ? "true" : "false");
+    $("reminder-sub").textContent = on
+      ? "مفعّل: سنذكّرك الساعة ٨:٣٠ مساءً إن لم تقرأ في يومك"
+      : "إشعار الساعة ٨:٣٠ مساءً إن لم تقرأ في يومك";
+  }
+  async function currentSubscription() {
+    if (!pushSupported()) return null;
+    const reg = await navigator.serviceWorker.getRegistration();
+    return reg ? reg.pushManager.getSubscription() : null;
+  }
+  async function refreshReminder() {
+    let on = false;
+    try {
+      const sub = await currentSubscription();
+      on = !!(sub && Notification.permission === "granted" && reader && reader.push_endpoint === sub.endpoint);
+    } catch {}
+    setReminderUI(on);
+  }
+  async function reminderOff() {
+    const { error } = await sb.rpc("juz2021_push_unsubscribe", { p_key: KEY });
+    if (error) throw error;
+    reader.push_endpoint = null;
+    try { const sub = await currentSubscription(); if (sub) await sub.unsubscribe(); } catch {}
+  }
+  async function reminderOn() {
+    if (isIOS && !isStandalone()) {
+      showInstallHelp();
+      $("ih-sub").textContent = "على الآيفون تعمل الإشعارات بعد تثبيت التطبيق: ثبّته ثم افتحه من الشاشة الرئيسية وفعّل التذكير من هناك.";
+      return;
+    }
+    if (!pushSupported()) { toast("هذا المتصفح لا يدعم الإشعارات"); return; }
+    if (Notification.permission === "denied") {
+      toast("الإشعارات محظورة لهذا التطبيق، فعّلها من إعدادات الهاتف ثم حاول مجددًا"); return;
+    }
+    // Ask first, straight from the tap (iPhone requires this).
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") { toast("لم يُسمح بالإشعارات"); return; }
+
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(VAPID_PUBLIC_KEY) });
+    const j = sub.toJSON();
+    const tz = (Intl.DateTimeFormat().resolvedOptions().timeZone) || "Asia/Riyadh";
+    const { error } = await sb.rpc("juz2021_push_subscribe", { p_key: KEY, p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth, p_tz: tz });
+    if (error) throw error;
+    reader.push_endpoint = j.endpoint;
+    setReminderUI(true);
+    // Confirmation notification, so the reader sees it works on this phone.
+    try {
+      await fetch(`${SUPABASE_URL}/functions/v1/juz2021-reminder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
+        body: JSON.stringify({ action: "test", key: KEY, endpoint: j.endpoint })
+      });
+    } catch {}
+    toast("تم تفعيل التذكير اليومي");
+  }
+  $("reminder").onclick = async () => {
+    const btn = $("reminder");
+    btn.classList.add("busy");
+    try {
+      if (btn.getAttribute("aria-checked") === "true") {
+        await reminderOff();
+        setReminderUI(false);
+        toast("تم إيقاف التذكير اليومي");
+      } else {
+        await reminderOn();
+      }
+    } catch {
+      toast("تعذّر تغيير التذكير، تحقق من الاتصال وحاول مرة أخرى");
+      refreshReminder();
+    } finally {
+      btn.classList.remove("busy");
+    }
+  };
+
+  // ---------- Start ----------
+  enterApp(true);
+})();
+</script>
+</body>
+</html>
