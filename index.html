@@ -187,6 +187,9 @@ const code = repo => `https://github.com/${USER}/${repo}`;
    icon: a key from ICONS below; bg: the picture's background colour.
 ------------------------------------------------------------------- */
 const PROJECTS = [
+  { name: "Bot or Human?", ar: "بوت أم إنسان؟", type: "Game", lang: "EN", released: "2026-11-22",
+    desc: "Read forum threads and guess which posts were written by bots. Learn the signs that give them away.",
+    url: "https://project-tools-directory.com/bot-or-human/", repo: "Test333", icon: "bot", bg: "#efeafd", fg: "#6d4ce0" },
   { name: "Calm Player", ar: "مشغل هادئ", type: "Tool", lang: "EN", released: "2026-11-09",
     desc: "Make YouTube playlists of videos or Shorts and watch them in a calm, distraction-free player — with a Kids mode.",
     url: site("Projects-Directory", "calm-player-p3/"), repo: "Projects-Directory", icon: "play", bg: "#e3f3f1", fg: "#2a7d72" },
@@ -217,6 +220,7 @@ const VAULT = { salt: "9GWcsF8t1fOETLv7fwWORg==", iv: "NWy9DNE5Xl38rA5F", iter: 
 /* Simple line icons (24x24, stroke = currentColor). */
 const I = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const ICONS = {
+  bot:     I(`<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/><path d="M2 13v3M22 13v3"/>`),
   play:    I(`<rect x="2" y="4" width="20" height="16" rx="4"/><path d="m10 9 5 3-5 3z"/>`),
   chat:    I(`<path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/>`),
   cards:   I(`<rect x="8" y="2" width="13" height="17" rx="2"/><path d="M5 5H4a1 1 0 0 0-1 1v15a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-1"/><path d="m14.5 7 .7 1.5 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2z"/><path d="M11 14h7"/>`),
