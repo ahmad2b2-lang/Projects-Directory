@@ -633,14 +633,43 @@
     setTimeout(() => { guardDone = true; updateNext(); }, 700); // also guards against an accidental double tap
   }
 
+  // ---------- Reliable page save ----------
+  // Phones (iPhones especially) often drop the connection while idle: the first request then
+  // fails and the next one works. So a save is tried a few times before giving up. Repeating is
+  // safe: the server only moves forward if the page sent is still the reader's current page.
+  const SAVE_WAITS = [0, 1000, 2500, 4000];   // 4 tries over about 7.5 seconds
+  const SAVE_TIMEOUT = 6000;                  // stop waiting on a single try that hangs
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const isTemporary = (res) => !res || res.status === 0 || res.status === 401 || res.status === 408 || res.status === 429 || res.status >= 500;
+  const withSignal = (q, signal) => (q && typeof q.abortSignal === "function" ? q.abortSignal(signal) : q);
+  async function saveWithRetry(makeCall, onRetry) {
+    let last = null;
+    for (let i = 0; i < SAVE_WAITS.length; i++) {
+      if (i > 0) { if (onRetry) onRetry(i); await wait(SAVE_WAITS[i]); }
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), SAVE_TIMEOUT);
+      let res = null;
+      try { res = await makeCall(ctrl.signal); } catch (e) { last = e; }
+      finally { clearTimeout(timer); }
+      if (res && !res.error && res.data) return res.data;
+      if (res) last = res.error;
+      if (res && !isTemporary(res)) break;      // a real refusal: retrying won't help
+    }
+    throw last || new Error("save");
+  }
+
   $("next").onclick = async () => {
     if (busy) return;
     if ($("next").dataset.retry) { renderReader(); return; }
-    busy = true; $("next").disabled = true;
+    const btn = $("next");
+    busy = true; btn.disabled = true;
+    btn.textContent = "جارٍ الحفظ…";
     const page = reader.current_page;
     try {
-      const { data, error } = await sb.rpc("juz2021_complete_page", { p_key: KEY, p_page: page });
-      if (error || !data) throw error || new Error("save");
+      const data = await saveWithRetry(
+        (signal) => withSignal(sb.rpc("juz2021_complete_page", { p_key: KEY, p_page: page }), signal),
+        () => { btn.textContent = "جارٍ إعادة المحاولة…"; }
+      );
       const finishedRead = data.reads > reader.reads;
       reader = data;
       session.done++;
@@ -648,8 +677,12 @@
       else if (session.done >= session.goal) finishSession();
       else renderReader();
     } catch {
-      toast("لم يُحفظ التقدّم، تحقق من الاتصال ثم حاول مرة أخرى");
-      $("next").disabled = false;
+      // Honest failure: stay on this page; nothing moves on without a confirmed save.
+      btn.textContent = "لم يُحفظ — أعد المحاولة";
+      toast(navigator.onLine === false
+        ? "لا يوجد اتصال بالإنترنت، ولم يُحفظ التقدّم. اضغط الزر للمحاولة مرة أخرى"
+        : "لم يُحفظ التقدّم. اضغط الزر للمحاولة مرة أخرى");
+      btn.disabled = false;
     } finally {
       busy = false;
     }
